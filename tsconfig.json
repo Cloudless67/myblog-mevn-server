@@ -1,0 +1,5 @@
+{
+    "extends": "@tsconfig/node14/tsconfig.json",
+    "exclude": ["./node_modules/", "./dist/"],
+    "module": "esnext"
+}
