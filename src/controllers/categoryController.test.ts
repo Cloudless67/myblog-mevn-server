@@ -3,6 +3,11 @@ import CategoryController from './categoryController';
 test('should build category object correctly', () => {
     const categories = [
         {
+            name: 'Etc',
+            isTopLevel: true,
+            children: [],
+        },
+        {
             name: 'Frontend',
             isTopLevel: true,
             children: ['Angular', 'React', 'Vue'],
@@ -25,7 +30,7 @@ test('should build category object correctly', () => {
         {
             name: 'Vue',
             isTopLevel: false,
-            children: ['Nuxt'],
+            children: ['Vuex', 'Nuxt'],
         },
         {
             name: 'Express',
@@ -38,12 +43,18 @@ test('should build category object correctly', () => {
             children: [],
         },
         {
+            name: 'Vuex',
+            isTopLevel: false,
+            children: [],
+        },
+        {
             name: 'Nuxt',
             isTopLevel: false,
             children: [],
         },
     ];
     const expected = [
+        'Etc',
         {
             name: 'Frontend',
             isTopLevel: true,
@@ -53,7 +64,7 @@ test('should build category object correctly', () => {
                 {
                     name: 'Vue',
                     isTopLevel: false,
-                    children: ['Nuxt'],
+                    children: ['Vuex', 'Nuxt'],
                 },
             ],
         },
@@ -63,7 +74,7 @@ test('should build category object correctly', () => {
             children: ['Express', 'Spring'],
         },
     ];
-
     const structured = CategoryController.structureCategories(categories);
+    console.log(structured);
     expect(structured).toEqual(expected);
 });

@@ -4,13 +4,15 @@ import DBManager from '../models/database';
 export default class CategoryController {
     public static async getCategories(req: Request, res: Response, next: NextFunction) {
         const categories = (await DBManager.instance.findFromCollection('Category', {})) as any[];
-        res.status(200).json(CategoryController.structureCategories(categories));
+        const structured = CategoryController.structureCategories(categories);
+
+        res.status(200).json(structured);
         next();
     }
 
     public static async postCategory(req: Request, res: Response, next: NextFunction) {
         const parent: string | undefined = req.body.parent;
-        const newCategory: Category = CategoryController.categoryFromReq(req);
+        const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
         await CategoryController.createCategory(newCategory, parent);
 
         res.status(200).end();
@@ -23,14 +25,14 @@ export default class CategoryController {
         console.log(req.params.name);
         await CategoryController.deleteCategoryFromDb(oldCategoryName);
 
-        const newCategory: Category = CategoryController.categoryFromReq(req);
+        const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
         await CategoryController.createCategory(newCategory, parent);
 
         res.status(200).end();
         next();
     }
 
-    private static categoryFromReq(req: Request): Category {
+    private static categoryFromReq(req: Request): CategoryObject {
         return {
             name: req.body.name,
             isTopLevel: req.body.parent === undefined,
@@ -55,7 +57,7 @@ export default class CategoryController {
         await DBManager.instance.deleteFromCollection('Category', { name });
     }
 
-    private static async createCategory(category: Category, parent: string | undefined) {
+    private static async createCategory(category: CategoryObject, parent: string | undefined) {
         await DBManager.instance.saveObjToCollection('Category', category);
         await DBManager.instance.updateObjAtCollection(
             'Category',
@@ -64,34 +66,47 @@ export default class CategoryController {
         );
     }
 
-    public static structureCategories(categories: Category[]): Category[] {
+    public static structureCategories(categories: CategoryObject[]): Category[] {
+        const clone = CategoryController.deepCloneCategories(categories);
         const structured: Category[] = [];
 
-        categories.filter(x => x.isTopLevel).forEach(top => structured.push(top));
-        structured.forEach(category => CategoryController.appendChildren(category, categories));
+        clone
+            .filter(x => x.isTopLevel)
+            .forEach(top => structured.push(CategoryController.appendChildren(top, clone)));
         return structured;
     }
 
-    public static appendChildren(category: Category, categories: Category[]) {
-        category.children = category.children.map(CategoryController.strToObject(categories));
+    public static appendChildren(category: CategoryObject, clone: CategoryObject[]) {
+        category.children = category.children.map(CategoryController.strToObject(clone));
+        return category.children.length > 0 ? category : category.name;
     }
 
-    private static strToObject(categories: Category[]) {
-        return (child: string | Category) => {
+    private static strToObject(clone: CategoryObject[]) {
+        return (child: Category) => {
             if (typeof child === 'string') {
-                let newChild = categories.find(x => x.name === child) as Category;
+                let newChild = clone.find(x => x.name === child) as CategoryObject;
                 if (newChild.children.length > 0) {
-                    CategoryController.appendChildren(newChild, categories);
+                    CategoryController.appendChildren(newChild, clone);
                     return newChild;
                 }
             }
             return child;
         };
     }
+
+    private static deepCloneCategories(categories: CategoryObject[]): CategoryObject[] {
+        return categories.map(category => ({
+            name: category.name,
+            isTopLevel: category.isTopLevel,
+            children: [...category.children],
+        }));
+    }
 }
 
-type Category = {
+type CategoryObject = {
     name: string;
     isTopLevel: boolean;
-    children: Array<string | Category>;
+    children: Array<Category>;
 };
+
+type Category = CategoryObject | string;

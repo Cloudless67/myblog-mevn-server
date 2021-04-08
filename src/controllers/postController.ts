@@ -8,7 +8,9 @@ export default class PostController {
 
     public static async getPosts(req: Request, res: Response, next: NextFunction) {
         const index = Number(req.query.idx || 0);
-        const posts = await PostController.findPostsFromDB();
+        const category = req.params.category;
+        const query = category ? { category } : {};
+        const posts = await PostController.findPostsFromDB(query);
 
         const postsAtIndex = PostController.sliceByIndex(posts, index);
         res.status(200).json(postsAtIndex);
@@ -16,10 +18,10 @@ export default class PostController {
     }
 
     public static async getPost(req: Request, res: Response, next: NextFunction) {
-        const url = req.params.slug;
+        const url = decodeURI(req.params.slug);
         const post = await PostController.findPostByUrl(url);
 
-        if (post.length > 0) res.status(200).json(post);
+        if (post.length > 0) res.status(200).json(post[0]);
         else res.status(404).json({ message: 'Post does not exist.' });
         next();
     }
@@ -32,7 +34,7 @@ export default class PostController {
     }
 
     public static async putPost(req: Request, res: Response, next: NextFunction) {
-        const url = req.params.slug;
+        const url = decodeURI(req.params.slug);
         const post = { ...req.body, formattedBody: marked(req.body.body) };
         await DBManager.instance.updateObjAtCollection('Post', { url }, post);
         res.status(200).json({ url: req.body.url });
@@ -40,14 +42,14 @@ export default class PostController {
     }
 
     public static async deletePost(req: Request, res: Response, next: NextFunction) {
-        const url = req.params.slug;
+        const url = decodeURI(req.params.slug);
         await DBManager.instance.deleteFromCollection('Post', { url });
         res.sendStatus(200);
         next();
     }
 
     public static async postReply(req: Request, res: Response, next: NextFunction) {
-        const url = req.params.slug;
+        const url = decodeURI(req.params.slug);
         const reply = new Reply(req.body.nickname, req.body.password, req.body.body);
         await DBManager.instance.updateObjAtCollection(
             'Post',
@@ -60,7 +62,7 @@ export default class PostController {
     }
 
     public static async deleteReply(req: Request, res: Response, next: NextFunction) {
-        const url = req.params.slug;
+        const url = decodeURI(req.params.slug);
         const _id = req.params.id;
         await DBManager.instance.updateObjAtCollection(
             'Post',
@@ -76,8 +78,8 @@ export default class PostController {
         return (await DBManager.instance.findFromCollection('Post', { url })) as any[];
     }
 
-    private static async findPostsFromDB(): Promise<any[]> {
-        return (await DBManager.instance.findFromCollection('Post', {})) as any[];
+    private static async findPostsFromDB(query: object): Promise<any[]> {
+        return (await DBManager.instance.findFromCollection('Post', query)) as any[];
     }
 
     private static sliceByIndex(posts: any[], idx: number): any[] {

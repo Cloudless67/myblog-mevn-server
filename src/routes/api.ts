@@ -4,7 +4,12 @@ import PostController from '../controllers/postController';
 
 const router = express.Router();
 
-router.get('/posts', PostController.getPosts);
+router.all('*', (req, res, next) => {
+    res.set({ 'Access-Control-Allow-Origin': '*' });
+    next();
+});
+
+router.get('/posts/:category?', PostController.getPosts);
 
 router
     .route('/post/:slug/reply/:id?')
