@@ -14,50 +14,31 @@ describe('CRUD Operation to database', () => {
     });
 
     test('save to database should work', async () => {
-        const result = await Database.instance.saveObjToCollection(
-            'Category',
-            testCategory
-        );
-        expect((result as ICategory).name).toEqual(testCategory.name);
+        const result = (await Database.instance.saveCategory(testCategory)) as any;
+        expect(result).not.toBeInstanceOf(Error);
+        expect(result.name).toEqual(testCategory.name);
     });
 
     test('find from database should work', async () => {
-        const data = (await Database.instance.findFromCollection(
-            'Category',
-            testCategory
-        )) as any[];
+        const category = (await Database.instance.findOneCategory(testCategory)) as any;
 
-        expect(data).toBeInstanceOf(Array);
-        expect((data[0] as ICategory).name).toEqual(testCategory.name);
+        expect(category).not.toBeInstanceOf(Error);
+        expect(category.name).toEqual(testCategory.name);
     });
 
     test('update to database should work', async () => {
-        await Database.instance.updateObjAtCollection(
-            'Category',
-            testCategory,
-            updatedCategory
-        );
-        const data = (await Database.instance.findFromCollection(
-            'Category',
-            updatedCategory
-        )) as any[];
+        await Database.instance.updateCategory(testCategory, updatedCategory);
+        const category = (await Database.instance.findOneCategory(updatedCategory)) as any;
 
-        expect(data).toBeInstanceOf(Array);
-        expect((data[0] as ICategory).name).toEqual(updatedCategory.name);
+        expect(category).not.toBeInstanceOf(Error);
+        expect(category.name).toEqual(updatedCategory.name);
     });
 
     test('delete should work', async () => {
-        await Database.instance.deleteFromCollection(
-            'Category',
-            updatedCategory
-        );
-        const data = (await Database.instance.findFromCollection(
-            'Category',
-            updatedCategory
-        )) as any[];
+        await Database.instance.deleteCategory(updatedCategory);
+        const category = (await Database.instance.findOneCategory(updatedCategory)) as any;
 
-        expect(data).toBeInstanceOf(Array);
-        expect(data.length).toBe(0);
+        expect(category).toBeUndefined;
     });
 
     afterAll(async () => {

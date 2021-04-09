@@ -1,4 +1,4 @@
-import { connect, connection, disconnect, Document, Model } from 'mongoose';
+import { connect, connection, disconnect, Document, Model, Query } from 'mongoose';
 import CategorySchema, { ICategory } from './category';
 import PostSchema, { IPost } from './post';
 
@@ -45,39 +45,62 @@ export default class DatabaseManager {
         this.updateModels();
     }
 
-    public async saveObjToCollection(
-        collection: Collections,
-        document: object
-    ): Promise<Document | void> {
-        const documentOfCollection = new this[collection](document);
-        return await this.trySaveDocToDb(documentOfCollection);
+    public async saveCategory(category: object): Promise<Document | Error> {
+        return await this.trySaveDocToDb(new this.Category(category));
     }
 
-    public async findFromCollection(
-        collection: Collections,
-        filter: object
-    ): Promise<Document[] | void> {
-        return await (this[collection] as Model<any>).find(filter).catch(console.error);
+    public async savePost(post: object): Promise<Document | Error> {
+        return await this.trySaveDocToDb(new this.Post(post));
     }
 
-    public async findOneFromCollection(collection: Collections, filter: object): Promise<Document> {
-        return ((await this.findFromCollection(collection, filter)) as Document[])[0];
+    public async findOneCategory(where: object): Promise<Document | Error> {
+        const doc = await this.findCategories(where);
+        return doc instanceof Error ? doc : doc[0];
     }
 
-    public async updateObjAtCollection(
-        collection: Collections,
-        filter: object,
-        query: object
-    ): Promise<void> {
-        await this[collection].updateOne(filter, query).catch(console.error);
+    public async findAllCategories(): Promise<Document[] | Error> {
+        return await this.Category.find({}).catch(this.returnError);
     }
 
-    public async deleteFromCollection(collection: Collections, condition: object): Promise<void> {
-        await this[collection].deleteOne(condition).catch(console.error);
+    public async findAllPosts(): Promise<Document[] | Error> {
+        return await this.findPosts({});
     }
 
-    private async trySaveDocToDb(document: Document): Promise<Document | void> {
-        return await document.save().catch(console.error);
+    public async findPostsInCategory(category: string): Promise<Document[] | Error> {
+        return await this.findPosts({ category });
+    }
+
+    public async findOnePost(where: object): Promise<Document | Error> {
+        const doc = await this.findPosts(where);
+        return doc instanceof Error ? doc : doc[0];
+    }
+
+    private async findPosts(where: object): Promise<Document[] | Error> {
+        return await this.Post.find(where).catch(this.returnError);
+    }
+
+    private async findCategories(where: object): Promise<Document[] | Error> {
+        return await this.Category.find(where).catch(this.returnError);
+    }
+
+    public async updateCategory(where: object, query: object): Promise<{} | Error> {
+        return await this.Category.updateOne(where, query).catch(this.returnError);
+    }
+
+    public async updatePost(where: object, query: object): Promise<{} | Error> {
+        return await this.Post.updateOne(where, query).catch(this.returnError);
+    }
+
+    public async deleteCategory(where: object): Promise<{} | Error> {
+        return await this.Category.deleteOne(where).catch(this.returnError);
+    }
+
+    public async deletePost(condition: object): Promise<{} | Error> {
+        return await this.Post.deleteOne(condition).catch(this.returnError);
+    }
+
+    private async trySaveDocToDb(document: Document): Promise<Document | Error> {
+        return await document.save().catch(this.returnError);
     }
 
     private constructor() {}
@@ -89,5 +112,10 @@ export default class DatabaseManager {
 
     public async dropDatabase() {
         await connection.dropDatabase();
+    }
+
+    private returnError(e: any): Error {
+        console.log(e);
+        return e;
     }
 }

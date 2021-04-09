@@ -3,10 +3,13 @@ import DBManager from '../models/database';
 
 export default class CategoryController {
     public static async getCategories(req: Request, res: Response, next: NextFunction) {
-        const categories = (await DBManager.instance.findFromCollection('Category', {})) as any[];
-        const structured = CategoryController.structureCategories(categories);
+        const categories = await DBManager.instance.findAllCategories();
 
-        res.status(200).json(structured);
+        if (categories) {
+            res.json(CategoryController.structureCategories(categories as any[]));
+        } else {
+            res.status(500).end();
+        }
         next();
     }
 
@@ -22,7 +25,6 @@ export default class CategoryController {
     public static async putCategory(req: Request, res: Response, next: NextFunction) {
         const oldCategoryName: string = req.params.name;
         const parent: string | undefined = req.body.parent;
-        console.log(req.params.name);
         await CategoryController.deleteCategoryFromDb(oldCategoryName);
 
         const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
@@ -49,18 +51,13 @@ export default class CategoryController {
     }
 
     private static async deleteCategoryFromDb(name: string) {
-        await DBManager.instance.updateObjAtCollection(
-            'Category',
-            { children: name },
-            { $pull: { children: name } }
-        );
-        await DBManager.instance.deleteFromCollection('Category', { name });
+        await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
+        await DBManager.instance.deleteCategory({ name });
     }
 
     private static async createCategory(category: CategoryObject, parent: string | undefined) {
-        await DBManager.instance.saveObjToCollection('Category', category);
-        await DBManager.instance.updateObjAtCollection(
-            'Category',
+        await DBManager.instance.saveCategory(category);
+        await DBManager.instance.updateCategory(
             { name: parent },
             { $push: { children: category.name } }
         );

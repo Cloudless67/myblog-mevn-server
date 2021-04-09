@@ -2,7 +2,7 @@
     "extends": "@tsconfig/node14/tsconfig.json",
     "exclude": ["./node_modules/", "./dist/"],
     "compilerOptions": {
-        "module": "esnext",
+        "module": "commonjs",
         "allowSyntheticDefaultImports": true
     }
 }

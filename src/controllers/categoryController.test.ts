@@ -75,6 +75,5 @@ test('should build category object correctly', () => {
         },
     ];
     const structured = CategoryController.structureCategories(categories);
-    console.log(structured);
     expect(structured).toEqual(expected);
 });
