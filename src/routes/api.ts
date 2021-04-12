@@ -31,4 +31,6 @@ router
     .put(CategoryController.putCategory)
     .delete(CategoryController.deleteCategory);
 
+router.get('/tags/:tag', PostController.getPostsWithTag);
+
 export default router;

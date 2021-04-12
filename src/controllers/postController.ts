@@ -20,6 +20,20 @@ export default class PostController {
         next();
     }
 
+    public static async getPostsWithTag(req: Request, res: Response, next: NextFunction) {
+        try {
+            const posts = await DBManager.instance.findPostsWithTag(req.params.tag);
+            if (posts) {
+                const index = Number(req.query.idx || 0);
+                const postsAtIndex = PostController.sliceByIndex(posts, index);
+                res.status(200).json({ posts: postsAtIndex, totalLength: posts.length });
+            }
+        } catch (error) {
+            res.status(404).send(error.message);
+        }
+        next();
+    }
+
     public static async getPost(req: Request, res: Response, next: NextFunction) {
         try {
             const url = decodeURI(req.params.slug);

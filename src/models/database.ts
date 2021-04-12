@@ -70,6 +70,10 @@ export default class DatabaseManager {
         return await this.findPosts({ category });
     }
 
+    public async findPostsWithTag(tag: string): Promise<Document[] | void> {
+        return await this.findPosts({ tags: tag });
+    }
+
     public async findOnePost(where: object): Promise<Document | void> {
         const doc = await this.findPosts(where);
         return doc instanceof Array ? doc[0] : doc;
