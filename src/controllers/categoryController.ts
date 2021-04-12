@@ -3,54 +3,44 @@ import DBManager from '../models/database';
 
 export default class CategoryController {
     public static async getCategories(req: Request, res: Response, next: NextFunction) {
-        const categories = await DBManager.instance.findAllCategories();
-
-        if (categories) {
+        try {
+            const categories = await DBManager.instance.findAllCategories();
             res.json(CategoryController.structureCategories(categories as any[]));
-        } else {
-            res.status(500).end();
+        } catch (error) {
+            res.status(500).send(error.message);
         }
         next();
     }
 
     public static async postCategory(req: Request, res: Response, next: NextFunction) {
         const parent: string | undefined = req.body.parent;
-        const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
-        await CategoryController.createCategory(newCategory, parent);
+        const newCategory = CategoryController.categoryFromReq(req);
 
-        res.status(200).end();
+        await CategoryController.tryCreateCategory(newCategory, res, parent);
         next();
     }
 
     public static async putCategory(req: Request, res: Response, next: NextFunction) {
-        const oldCategoryName: string = req.params.name;
         const parent: string | undefined = req.body.parent;
-        await CategoryController.deleteCategoryFromDb(oldCategoryName);
+        await CategoryController.tryDeleteCategory(req.params.name, res);
 
         const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
-        await CategoryController.createCategory(newCategory, parent);
-
-        res.status(200).end();
+        await CategoryController.tryCreateCategory(newCategory, res, parent);
         next();
-    }
-
-    private static categoryFromReq(req: Request): CategoryObject {
-        return {
-            name: req.body.name,
-            isTopLevel: req.body.parent === undefined,
-            children: [],
-        };
     }
 
     public static async deleteCategory(req: Request, res: Response, next: NextFunction) {
         const name: string = req.params.name;
-        await CategoryController.deleteCategoryFromDb(name);
+        await CategoryController.deleteCategoryFromDB(name);
 
         res.status(200).end();
         next();
     }
 
-    private static async deleteCategoryFromDb(name: string) {
+    private static async deleteCategoryFromDB(name: string) {
+        const category = (await DBManager.instance.findOneCategory({ name })) as any;
+        if (!category) throw new Error('The category does not exists.');
+        if (category.children) throw new Error('Can not delete category with children.');
         await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
         await DBManager.instance.deleteCategory({ name });
     }
@@ -76,6 +66,35 @@ export default class CategoryController {
     public static appendChildren(category: CategoryObject, clone: CategoryObject[]) {
         category.children = category.children.map(CategoryController.strToObject(clone));
         return category.children.length > 0 ? category : category.name;
+    }
+
+    private static async tryCreateCategory(
+        category: CategoryObject,
+        res: Response,
+        parent?: string
+    ) {
+        try {
+            await CategoryController.createCategory(category, parent);
+            res.status(200).end();
+        } catch (error) {
+            res.status(409).send(error.message);
+        }
+    }
+
+    private static async tryDeleteCategory(oldCategoryName: string, res: Response) {
+        try {
+            await CategoryController.deleteCategoryFromDB(oldCategoryName);
+        } catch (error) {
+            res.status(404).send(error.message);
+        }
+    }
+
+    private static categoryFromReq(req: Request): CategoryObject {
+        return {
+            name: req.body.name,
+            isTopLevel: req.body.parent === undefined,
+            children: [],
+        };
     }
 
     private static strToObject(clone: CategoryObject[]) {
