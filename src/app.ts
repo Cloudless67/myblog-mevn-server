@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
 import logger from 'morgan';
+import helmet from 'helmet';
 
 import apiRouter from './routes/api';
 import DatabaseManager from './models/database';
@@ -10,6 +11,7 @@ dotenv.config();
 
 const app = express();
 
+app.use(helmet());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

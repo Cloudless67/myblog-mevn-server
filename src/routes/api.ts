@@ -5,11 +5,13 @@ import PostController from '../controllers/postController';
 const router = express.Router();
 
 router.all('*', (req, res, next) => {
-    res.set({ 'Access-Control-Allow-Origin': '*' });
+    res.set({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type' });
     next();
 });
 
 router.get('/posts/:category?', PostController.getPosts);
+
+router.get('/tags/:tag', PostController.getPostsWithTag);
 
 router
     .route('/post/:slug/reply/:id?')
@@ -30,7 +32,5 @@ router
     .post(CategoryController.postCategory)
     .put(CategoryController.putCategory)
     .delete(CategoryController.deleteCategory);
-
-router.get('/tags/:tag', PostController.getPostsWithTag);
 
 export default router;

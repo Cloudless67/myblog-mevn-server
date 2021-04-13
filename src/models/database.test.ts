@@ -1,4 +1,3 @@
-import { ICategory } from './category';
 import Database from './database';
 
 const testCategory = { name: 'test' };

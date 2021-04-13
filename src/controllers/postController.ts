@@ -3,38 +3,40 @@ import marked from 'marked';
 import DBManager from '../models/database';
 import { Reply } from '../models/reply';
 
-export default class PostController {
-    static readonly maxPostsToShow = 10;
+type Next = NextFunction;
 
-    public static async getPosts(req: Request, res: Response, next: NextFunction) {
+export default class PostController {
+    static readonly maxPostsPerPage = 10;
+
+    public static async getPosts(req: Request, res: Response, next: Next) {
         try {
             const posts = await PostController.findPostsFromDB(req.params.category);
-            if (posts) {
-                const index = Number(req.query.idx || 0);
-                const postsAtIndex = PostController.sliceByIndex(posts, index);
-                res.status(200).json({ posts: postsAtIndex, totalLength: posts.length });
-            }
+            PostController.sendPostsList(req, res, posts);
         } catch (error) {
             res.status(404).send(error.message);
         }
         next();
     }
 
-    public static async getPostsWithTag(req: Request, res: Response, next: NextFunction) {
+    public static async getPostsWithTag(req: Request, res: Response, next: Next) {
         try {
             const posts = await DBManager.instance.findPostsWithTag(req.params.tag);
-            if (posts) {
-                const index = Number(req.query.idx || 0);
-                const postsAtIndex = PostController.sliceByIndex(posts, index);
-                res.status(200).json({ posts: postsAtIndex, totalLength: posts.length });
-            }
+            PostController.sendPostsList(req, res, posts);
         } catch (error) {
             res.status(404).send(error.message);
         }
         next();
     }
 
-    public static async getPost(req: Request, res: Response, next: NextFunction) {
+    private static sendPostsList(req: Request, res: Response, posts: any[] | void) {
+        if (posts) {
+            const page = Number(req.query.page || 1) - 1;
+            const postsAtIndex = PostController.sliceByIndex(posts, page);
+            res.status(200).json({ posts: postsAtIndex, totalLength: posts.length });
+        }
+    }
+
+    public static async getPost(req: Request, res: Response, next: Next) {
         try {
             const url = decodeURI(req.params.slug);
             const post = await DBManager.instance.findOnePost({ url });
@@ -45,7 +47,7 @@ export default class PostController {
         next();
     }
 
-    public static async postPost(req: Request, res: Response, next: NextFunction) {
+    public static async postPost(req: Request, res: Response, next: Next) {
         try {
             const post = { ...req.body, formattedBody: marked(req.body.body) };
             await DBManager.instance.savePost(post);
@@ -56,7 +58,7 @@ export default class PostController {
         next();
     }
 
-    public static async putPost(req: Request, res: Response, next: NextFunction) {
+    public static async putPost(req: Request, res: Response, next: Next) {
         try {
             const url = decodeURI(req.params.slug);
             const post = { ...req.body, formattedBody: marked(req.body.body) };
@@ -68,7 +70,7 @@ export default class PostController {
         next();
     }
 
-    public static async deletePost(req: Request, res: Response, next: NextFunction) {
+    public static async deletePost(req: Request, res: Response, next: Next) {
         try {
             const url = decodeURI(req.params.slug);
             await DBManager.instance.deletePost({ url });
@@ -79,7 +81,7 @@ export default class PostController {
         next();
     }
 
-    public static async postReply(req: Request, res: Response, next: NextFunction) {
+    public static async postReply(req: Request, res: Response, next: Next) {
         try {
             const url = decodeURI(req.params.slug);
             const reply = new Reply(req.body.nickname, req.body.password, req.body.body);
@@ -87,15 +89,18 @@ export default class PostController {
                 { url },
                 { $push: { replies: reply }, $inc: { repliesNum: 1 } }
             );
-
-            res.status(200).end();
+            res.status(200).json({
+                nickname: reply.nickname,
+                body: reply.body,
+                writtenTime: reply.writtenTime,
+            });
         } catch (error) {
             res.status(400).send(error.message);
         }
         next();
     }
 
-    public static async deleteReply(req: Request, res: Response, next: NextFunction) {
+    public static async deleteReply(req: Request, res: Response, next: Next) {
         try {
             const url = decodeURI(req.params.slug);
             const _id = req.params.id;
@@ -119,10 +124,10 @@ export default class PostController {
         }
     }
 
-    private static sliceByIndex(posts: any[], idx: number): any[] {
+    private static sliceByIndex(posts: any[], page: number): any[] {
         return posts.slice(
-            idx * PostController.maxPostsToShow,
-            idx * PostController.maxPostsToShow + PostController.maxPostsToShow
+            page * PostController.maxPostsPerPage,
+            page * PostController.maxPostsPerPage + PostController.maxPostsPerPage
         );
     }
 }

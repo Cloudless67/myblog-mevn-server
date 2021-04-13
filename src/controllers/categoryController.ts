@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import DBManager from '../models/database';
 
+type Next = NextFunction;
+
 export default class CategoryController {
-    public static async getCategories(req: Request, res: Response, next: NextFunction) {
+    public static async getCategories(req: Request, res: Response, next: Next) {
         try {
             const categories = await DBManager.instance.findAllCategories();
             res.json(CategoryController.structureCategories(categories as any[]));
@@ -12,7 +14,7 @@ export default class CategoryController {
         next();
     }
 
-    public static async postCategory(req: Request, res: Response, next: NextFunction) {
+    public static async postCategory(req: Request, res: Response, next: Next) {
         const parent: string | undefined = req.body.parent;
         const newCategory = CategoryController.categoryFromReq(req);
 
@@ -20,7 +22,7 @@ export default class CategoryController {
         next();
     }
 
-    public static async putCategory(req: Request, res: Response, next: NextFunction) {
+    public static async putCategory(req: Request, res: Response, next: Next) {
         const parent: string | undefined = req.body.parent;
         await CategoryController.tryDeleteCategory(req.params.name, res);
 
@@ -29,7 +31,7 @@ export default class CategoryController {
         next();
     }
 
-    public static async deleteCategory(req: Request, res: Response, next: NextFunction) {
+    public static async deleteCategory(req: Request, res: Response, next: Next) {
         const name: string = req.params.name;
         await CategoryController.deleteCategoryFromDB(name);
 
