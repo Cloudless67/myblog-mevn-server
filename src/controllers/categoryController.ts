@@ -1,42 +1,36 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import DBManager from '../models/database';
 
-type Next = NextFunction;
-
 export default class CategoryController {
-    public static async getCategories(req: Request, res: Response, next: Next) {
+    public static async getCategories(req: Request, res: Response) {
         try {
             const categories = await DBManager.instance.findAllCategories();
             res.json(CategoryController.structureCategories(categories as any[]));
         } catch (error) {
             res.status(500).send(error.message);
         }
-        next();
     }
 
-    public static async postCategory(req: Request, res: Response, next: Next) {
+    public static async postCategory(req: Request, res: Response) {
         const parent: string | undefined = req.body.parent;
         const newCategory = CategoryController.categoryFromReq(req);
 
         await CategoryController.tryCreateCategory(newCategory, res, parent);
-        next();
     }
 
-    public static async putCategory(req: Request, res: Response, next: Next) {
+    public static async putCategory(req: Request, res: Response) {
         const parent: string | undefined = req.body.parent;
         await CategoryController.tryDeleteCategory(req.params.name, res);
 
         const newCategory: CategoryObject = CategoryController.categoryFromReq(req);
         await CategoryController.tryCreateCategory(newCategory, res, parent);
-        next();
     }
 
-    public static async deleteCategory(req: Request, res: Response, next: Next) {
+    public static async deleteCategory(req: Request, res: Response) {
         const name: string = req.params.name;
         await CategoryController.deleteCategoryFromDB(name);
 
         res.status(200).end();
-        next();
     }
 
     private static async deleteCategoryFromDB(name: string) {

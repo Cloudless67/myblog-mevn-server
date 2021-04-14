@@ -1,6 +1,7 @@
 import express from 'express';
 import CategoryController from '../controllers/categoryController';
 import PostController from '../controllers/postController';
+import { signToken, verifyToken } from '../controllers/Authentication';
 
 const router = express.Router();
 
@@ -9,28 +10,34 @@ router.all('*', (req, res, next) => {
     next();
 });
 
-router.get('/posts/:category?', PostController.getPosts);
+// Authentication Route
+router.post('/login', signToken);
 
-router.get('/tags/:tag', PostController.getPostsWithTag);
-
+//  Reply Route
 router
     .route('/post/:slug/reply/:id?')
     .post(PostController.postReply)
     .delete(PostController.deleteReply);
 
+//  Post Route
+router.get('/posts/:category?', PostController.getPosts);
+
+router.get('/tags/:tag', PostController.getPostsWithTag);
+
 router
     .route('/post/:slug?')
     .get(PostController.getPost)
-    .post(PostController.postPost)
-    .put(PostController.putPost)
-    .delete(PostController.deletePost);
+    .post(verifyToken, PostController.postPost)
+    .put(verifyToken, PostController.putPost)
+    .delete(verifyToken, PostController.deletePost);
 
+// Category Route
 router.get('/categories', CategoryController.getCategories);
 
 router
     .route('/category/:name?')
-    .post(CategoryController.postCategory)
-    .put(CategoryController.putCategory)
-    .delete(CategoryController.deleteCategory);
+    .post(verifyToken, CategoryController.postCategory)
+    .put(verifyToken, CategoryController.putCategory)
+    .delete(verifyToken, CategoryController.deleteCategory);
 
 export default router;

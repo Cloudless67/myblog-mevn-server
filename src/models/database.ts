@@ -1,4 +1,4 @@
-import { connect, connection, disconnect, Document, Model, Query } from 'mongoose';
+import { connect, connection, disconnect, Document, Model } from 'mongoose';
 import CategorySchema, { ICategory } from './category';
 import PostSchema, { IPost } from './post';
 
@@ -27,7 +27,7 @@ export default class DatabaseManager {
 
     public async connect(url?: string): Promise<void> {
         const uri = process.env.DB_URL! + (url || process.env.DB_DEFAULT!);
-        await connect(uri, connectOptions).catch(this.throwError);
+        connect(uri, connectOptions);
 
         console.log('Successfully connected to mongodb!');
 
@@ -37,7 +37,11 @@ export default class DatabaseManager {
     }
 
     public async disconnect(): Promise<void> {
-        await disconnect().catch(this.throwError);
+        try {
+            await disconnect();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     public changeDatabase(dbName: ValidSubdomains): void {

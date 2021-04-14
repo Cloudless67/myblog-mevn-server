@@ -1,31 +1,27 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import marked from 'marked';
 import DBManager from '../models/database';
 import { Reply } from '../models/reply';
 
-type Next = NextFunction;
-
 export default class PostController {
     static readonly maxPostsPerPage = 10;
 
-    public static async getPosts(req: Request, res: Response, next: Next) {
+    public static async getPosts(req: Request, res: Response) {
         try {
             const posts = await PostController.findPostsFromDB(req.params.category);
             PostController.sendPostsList(req, res, posts);
         } catch (error) {
             res.status(404).send(error.message);
         }
-        next();
     }
 
-    public static async getPostsWithTag(req: Request, res: Response, next: Next) {
+    public static async getPostsWithTag(req: Request, res: Response) {
         try {
             const posts = await DBManager.instance.findPostsWithTag(req.params.tag);
             PostController.sendPostsList(req, res, posts);
         } catch (error) {
             res.status(404).send(error.message);
         }
-        next();
     }
 
     private static sendPostsList(req: Request, res: Response, posts: any[] | void) {
@@ -36,7 +32,7 @@ export default class PostController {
         }
     }
 
-    public static async getPost(req: Request, res: Response, next: Next) {
+    public static async getPost(req: Request, res: Response) {
         try {
             const url = decodeURI(req.params.slug);
             const post = await DBManager.instance.findOnePost({ url });
@@ -44,10 +40,9 @@ export default class PostController {
         } catch (error) {
             res.status(404).send(error.message);
         }
-        next();
     }
 
-    public static async postPost(req: Request, res: Response, next: Next) {
+    public static async postPost(req: Request, res: Response) {
         try {
             const post = { ...req.body, formattedBody: marked(req.body.body) };
             await DBManager.instance.savePost(post);
@@ -55,10 +50,9 @@ export default class PostController {
         } catch (error) {
             res.status(400).send(error.message);
         }
-        next();
     }
 
-    public static async putPost(req: Request, res: Response, next: Next) {
+    public static async putPost(req: Request, res: Response) {
         try {
             const url = decodeURI(req.params.slug);
             const post = { ...req.body, formattedBody: marked(req.body.body) };
@@ -67,10 +61,9 @@ export default class PostController {
         } catch (error) {
             res.status(400).send(error.message);
         }
-        next();
     }
 
-    public static async deletePost(req: Request, res: Response, next: Next) {
+    public static async deletePost(req: Request, res: Response) {
         try {
             const url = decodeURI(req.params.slug);
             await DBManager.instance.deletePost({ url });
@@ -78,10 +71,9 @@ export default class PostController {
         } catch (error) {
             res.status(404).send(error.message);
         }
-        next();
     }
 
-    public static async postReply(req: Request, res: Response, next: Next) {
+    public static async postReply(req: Request, res: Response) {
         try {
             const url = decodeURI(req.params.slug);
             const reply = new Reply(req.body.nickname, req.body.password, req.body.body);
@@ -97,10 +89,9 @@ export default class PostController {
         } catch (error) {
             res.status(400).send(error.message);
         }
-        next();
     }
 
-    public static async deleteReply(req: Request, res: Response, next: Next) {
+    public static async deleteReply(req: Request, res: Response) {
         try {
             const url = decodeURI(req.params.slug);
             const _id = req.params.id;
@@ -113,7 +104,6 @@ export default class PostController {
         } catch (error) {
             res.status(400).send(error.message);
         }
-        next();
     }
 
     private static async findPostsFromDB(category: string | undefined) {
