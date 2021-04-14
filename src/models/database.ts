@@ -25,7 +25,7 @@ export default class DatabaseManager {
         return this._instance;
     }
 
-    public async connect(url?: string): Promise<void> {
+    public async connect(url?: string) {
         const uri = process.env.DB_URL! + (url || process.env.DB_DEFAULT!);
         connect(uri, connectOptions);
 
@@ -36,7 +36,7 @@ export default class DatabaseManager {
         this.updateModels();
     }
 
-    public async disconnect(): Promise<void> {
+    public async disconnect() {
         try {
             await disconnect();
         } catch (error) {
@@ -44,70 +44,84 @@ export default class DatabaseManager {
         }
     }
 
-    public changeDatabase(dbName: ValidSubdomains): void {
+    public changeDatabase(dbName: ValidSubdomains) {
         connection.useDb(dbName, { useCache: true });
         this.updateModels();
     }
 
-    public async saveCategory(category: object): Promise<Document | void> {
+    public async saveCategory(category: object) {
         return await this.trySaveDocToDb(new this.Category(category));
     }
 
-    public async savePost(post: object): Promise<Document | void> {
+    public async savePost(post: object) {
         return await this.trySaveDocToDb(new this.Post(post));
     }
 
-    public async findOneCategory(where: object): Promise<Document | void> {
+    public async findOneCategory(where: object) {
         const doc = await this.findCategories(where);
         return doc instanceof Array ? doc[0] : doc;
     }
 
-    public async findAllCategories(): Promise<Document[] | void> {
+    public async findAllCategories() {
         return await this.Category.find({}).catch(this.throwError);
     }
 
-    public async findAllPosts(): Promise<Document[] | void> {
+    public async findAllPosts() {
         return await this.findPosts({});
     }
 
-    public async findPostsInCategory(category: string): Promise<Document[] | void> {
+    public async findPostsInCategory(category: string) {
         return await this.findPosts({ category });
     }
 
-    public async findPostsWithTag(tag: string): Promise<Document[] | void> {
+    public async findPostsWithTag(tag: string) {
         return await this.findPosts({ tags: tag });
     }
 
-    public async findOnePost(where: object): Promise<Document | void> {
+    public async findOnePost(where: object) {
         const doc = await this.findPosts(where);
         return doc instanceof Array ? doc[0] : doc;
     }
 
-    private async findPosts(where: object): Promise<Document[] | void> {
+    private async findPosts(where: object) {
         return await this.Post.find(where).catch(this.throwError);
     }
 
-    private async findCategories(where: object): Promise<Document[] | void> {
+    private async findCategories(where: object) {
         return await this.Category.find(where).catch(this.throwError);
     }
 
-    public async updateCategory(where: object, query: object): Promise<{} | void> {
+    public async updateCategory(where: object, query: object) {
         return await this.Category.updateOne(where, query).catch(this.throwError);
     }
 
-    public async updatePost(where: object, query: object): Promise<{} | void> {
+    public async updatePost(where: object, query: object) {
         return await this.Post.updateOne(where, query).catch(this.throwError);
     }
 
-    public async deleteCategory(where: object): Promise<{} | void> {
+    public async postReply(postUrl: string, reply: object) {
+        await this.updatePost(
+            { url: postUrl },
+            { $push: { replies: reply }, $inc: { repliesNum: 1 } }
+        );
+    }
+
+    public async deleteReply(postUrl: string, replyId: string) {
+        await this.updatePost(
+            { url: postUrl },
+            { $pull: { replies: { _id: replyId } }, $inc: { repliesNum: -1 } }
+        );
+    }
+
+    public async deleteCategory(where: object) {
         return await this.Category.deleteOne(where).catch(this.throwError);
     }
 
-    public async deletePost(condition: object): Promise<{} | void> {
+    public async deletePost(condition: object) {
         return await this.Post.deleteOne(condition).catch(this.throwError);
     }
 
-    private async trySaveDocToDb(document: Document): Promise<Document | void> {
+    private async trySaveDocToDb(document: Document) {
         return await document.save().catch(this.throwError);
     }
 

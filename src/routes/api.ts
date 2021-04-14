@@ -1,6 +1,7 @@
 import express from 'express';
-import CategoryController from '../controllers/categoryController';
-import PostController from '../controllers/postController';
+import * as CategoryController from '../controllers/categoryController';
+import * as PostController from '../controllers/postController';
+import * as ReplyController from '../controllers/replyController';
 import { signToken, verifyToken } from '../controllers/Authentication';
 
 const router = express.Router();
@@ -16,8 +17,8 @@ router.post('/login', signToken);
 //  Reply Route
 router
     .route('/post/:slug/reply/:id?')
-    .post(PostController.postReply)
-    .delete(PostController.deleteReply);
+    .post(ReplyController.postReply)
+    .delete(ReplyController.deleteReply);
 
 //  Post Route
 router.get('/posts/:category?', PostController.getPosts);
