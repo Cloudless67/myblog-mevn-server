@@ -48,7 +48,7 @@ async function createCategory(category: CategoryObject, parent: string | undefin
     );
 }
 
-function structureCategories(categories: CategoryObject[]): Category[] {
+export function structureCategories(categories: CategoryObject[]): Category[] {
     const clone = deepCloneCategories(categories);
     const structured: Category[] = [];
 
