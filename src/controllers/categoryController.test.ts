@@ -1,4 +1,4 @@
-import CategoryController from './categoryController';
+import * as CategoryController from './categoryController';
 
 test('should build category object correctly', () => {
     const categories = [
