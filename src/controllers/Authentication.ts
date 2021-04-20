@@ -6,6 +6,14 @@ export async function signToken(req: Request, res: Response) {
     const id = req.body.id;
     const password = req.body.password;
 
+    if (id !== process.env.ID) {
+        res.status(403).send('Invalid userID');
+    } else {
+        await verifyPassword(password, res);
+    }
+}
+
+async function verifyPassword(password: any, res: Response) {
     try {
         const auth = await bcrypt.compare(password, process.env.PASSWORD!);
         if (auth) {
@@ -31,5 +39,7 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
         } catch (error) {
             res.status(403).send(error.message);
         }
+    } else {
+        res.status(403).send('Missing authentication header!');
     }
 }

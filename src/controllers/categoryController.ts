@@ -4,6 +4,15 @@ import DBManager from '../models/database';
 export async function getCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
+        if (categories) res.json(categories.map((x: any) => x.name));
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+}
+
+export async function getStructuredCategories(req: Request, res: Response) {
+    try {
+        const categories = await DBManager.instance.findAllCategories();
         res.json(structureCategories(categories as any[]));
     } catch (error) {
         res.status(500).send(error.message);

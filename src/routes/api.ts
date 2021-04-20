@@ -6,11 +6,6 @@ import { signToken, verifyToken } from '../controllers/Authentication';
 
 const router = express.Router();
 
-router.all('*', (req, res, next) => {
-    res.set({ 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type' });
-    next();
-});
-
 // Authentication Route
 router.post('/login', signToken);
 
@@ -33,6 +28,7 @@ router
     .delete(verifyToken, PostController.deletePost);
 
 // Category Route
+router.get('/categories/structured', CategoryController.getStructuredCategories);
 router.get('/categories', CategoryController.getCategories);
 
 router

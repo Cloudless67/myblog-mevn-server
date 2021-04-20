@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import marked from 'marked';
 import DBManager from '../models/database';
-import { Reply } from '../models/reply';
 
 const maxPostsPerPage = 10;
 
@@ -56,7 +55,7 @@ export async function putPost(req: Request, res: Response) {
         const url = decodeURI(req.params.slug);
         const post = { ...req.body, formattedBody: marked(req.body.body) };
         await DBManager.instance.updatePost({ url }, post);
-        res.status(200).json({ url: req.body.url });
+        res.status(200).json({ url });
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -69,39 +68,6 @@ export async function deletePost(req: Request, res: Response) {
         res.sendStatus(200);
     } catch (error) {
         res.status(404).send(error.message);
-    }
-}
-
-export async function postReply(req: Request, res: Response) {
-    try {
-        const url = decodeURI(req.params.slug);
-        const reply = new Reply(req.body.nickname, req.body.password, req.body.body);
-        await DBManager.instance.updatePost(
-            { url },
-            { $push: { replies: reply }, $inc: { repliesNum: 1 } }
-        );
-        res.status(200).json({
-            nickname: reply.nickname,
-            body: reply.body,
-            writtenTime: reply.writtenTime,
-        });
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-export async function deleteReply(req: Request, res: Response) {
-    try {
-        const url = decodeURI(req.params.slug);
-        const _id = req.params.id;
-        await DBManager.instance.updatePost(
-            { url },
-            { $pull: { replies: { _id } }, $inc: { repliesNum: -1 } }
-        );
-
-        res.status(200).end();
-    } catch (error) {
-        res.status(400).send(error.message);
     }
 }
 
