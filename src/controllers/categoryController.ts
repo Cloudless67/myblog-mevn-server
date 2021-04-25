@@ -23,22 +23,45 @@ export async function postCategory(req: Request, res: Response) {
     const parent: string | undefined = req.body.parent;
     const newCategory = categoryFromReq(req);
 
-    await tryCreateCategory(newCategory, res, parent);
+    try {
+        await createCategory(newCategory, parent);
+        res.status(200).end();
+    } catch (error) {
+        res.status(409).send(error.message);
+    }
 }
 
 export async function putCategory(req: Request, res: Response) {
-    const parent: string | undefined = req.body.parent;
-    await tryDeleteCategory(req.params.name, res);
+    const parent = req.body.parent;
+    const name = req.params.name;
 
-    const newCategory: CategoryObject = categoryFromReq(req);
-    await tryCreateCategory(newCategory, res, parent);
+    try {
+        await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
+        if (parent) {
+            const x = await DBManager.instance.updateCategory(
+                { name: parent },
+                { $push: { children: name } }
+            );
+            await DBManager.instance.updateCategory({ name }, { isTopLevel: false });
+        } else {
+            await DBManager.instance.updateCategory({ name }, { isTopLevel: true });
+        }
+        const categories = await DBManager.instance.findAllCategories();
+        res.json(structureCategories(categories as any[]));
+    } catch (error) {
+        res.status(400).send(error.message);
+        return;
+    }
 }
 
 export async function deleteCategory(req: Request, res: Response) {
     const name: string = req.params.name;
-    await deleteCategoryFromDB(name);
-
-    res.status(200).end();
+    try {
+        await deleteCategoryFromDB(name);
+        res.status(200).end();
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
 }
 
 async function deleteCategoryFromDB(name: string) {
@@ -63,23 +86,6 @@ export function structureCategories(categories: CategoryObject[]): Category[] {
 
     clone.filter(x => x.isTopLevel).forEach(top => structured.push(appendChildren(top, clone)));
     return structured;
-}
-
-async function tryCreateCategory(category: CategoryObject, res: Response, parent?: string) {
-    try {
-        await createCategory(category, parent);
-        res.status(200).end();
-    } catch (error) {
-        res.status(409).send(error.message);
-    }
-}
-
-async function tryDeleteCategory(oldCategoryName: string, res: Response) {
-    try {
-        await deleteCategoryFromDB(oldCategoryName);
-    } catch (error) {
-        res.status(404).send(error.message);
-    }
 }
 
 function categoryFromReq(req: Request): CategoryObject {
