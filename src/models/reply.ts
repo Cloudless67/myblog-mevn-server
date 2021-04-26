@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 import { DateTime } from 'luxon';
 
 const ReplySchema: Schema = new Schema();
@@ -17,6 +17,7 @@ ReplySchema.add({
 export default ReplySchema;
 
 export class Reply {
+    _id: Types.ObjectId;
     nickname: string;
     body: string;
     password: string;
@@ -24,6 +25,7 @@ export class Reply {
     reReplies: any[];
 
     public constructor(nickname: string, password: string, body: string) {
+        this._id = Types.ObjectId();
         this.nickname = nickname;
         this.password = password;
         this.body = body;

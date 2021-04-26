@@ -100,10 +100,11 @@ export default class DatabaseManager {
     }
 
     public async postReply(postUrl: string, reply: object) {
-        await this.updatePost(
+        const res = await this.updatePost(
             { url: postUrl },
             { $push: { replies: reply }, $inc: { repliesNum: 1 } }
         );
+        console.log(res);
     }
 
     public async deleteReply(postUrl: string, replyId: string) {
