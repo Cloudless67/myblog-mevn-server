@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import marked from 'marked';
+import marked from '../marked';
 import DBManager from '../models/database';
 
 const maxPostsPerPage = 10;
