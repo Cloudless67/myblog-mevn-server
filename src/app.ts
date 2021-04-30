@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import logger from 'morgan';
 
+import history from 'connect-history-api-fallback';
 import helmet from 'helmet';
 import cspOptions from './cspOptions';
 
@@ -13,23 +14,15 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-    helmet({
-        contentSecurityPolicy: cspOptions,
-    })
-);
-
+app.use(helmet({ contentSecurityPolicy: cspOptions }));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/api', apiRouter);
 
-app.use(/[^/]+/, (req, res) => {
-    res.redirect('/');
-});
+app.use(history());
+app.use(express.static(path.join(__dirname, 'public')));
 
 if (process.env.NODE_ENV !== 'test') {
     DatabaseManager.instance.connect();
