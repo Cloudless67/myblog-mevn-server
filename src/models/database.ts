@@ -3,7 +3,6 @@ import CategorySchema, { ICategory } from './category';
 import PostSchema, { IPost } from './post';
 
 type ValidSubdomains = 'www' | 'ee';
-type Collections = 'Category' | 'Post';
 
 const connectOptions = {
     useNewUrlParser: true,
@@ -66,25 +65,33 @@ export default class DatabaseManager {
         return await this.Category.find({}).catch(this.throwError);
     }
 
-    public async findAllPosts() {
-        return await this.findPosts({});
+    public async findAllPosts(page: number) {
+        return await this.findPosts({}, page);
     }
 
-    public async findPostsInCategory(category: string) {
-        return await this.findPosts({ category });
+    public async findPostsInCategory(category: string, page: number) {
+        return await this.findPosts({ category }, page);
     }
 
-    public async findPostsWithTag(tag: string) {
-        return await this.findPosts({ tags: tag });
+    public async findPostsWithTag(tag: string, page: number) {
+        return await this.findPosts({ tags: tag }, page);
     }
 
     public async findOnePost(where: object) {
-        const doc = await this.findPosts(where);
+        const doc = await this.Post.find(where).catch(this.throwError);
         return doc instanceof Array ? doc[0] : doc;
     }
 
-    private async findPosts(where: object) {
-        return await this.Post.find(where).catch(this.throwError);
+    private async findPosts(where: object, page: number) {
+        const postPerPage = 10;
+        const query = await this.Post.aggregate()
+            .match(where)
+            .facet({
+                docs: [{ $skip: postPerPage * (page - 1) }, { $limit: postPerPage }],
+                totalPages: [{ $count: 'count' }],
+            });
+
+        return { docs: query[0].docs, totalPages: query[0].totalPages[0].count };
     }
 
     private async findCategories(where: object) {
@@ -104,7 +111,6 @@ export default class DatabaseManager {
             { url: postUrl },
             { $push: { replies: reply }, $inc: { repliesNum: 1 } }
         );
-        console.log(res);
     }
 
     public async deleteReply(postUrl: string, replyId: string) {

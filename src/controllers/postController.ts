@@ -2,12 +2,19 @@ import { Request, Response } from 'express';
 import marked from '../marked';
 import DBManager from '../models/database';
 
-const maxPostsPerPage = 10;
-
 export async function getPosts(req: Request, res: Response) {
     try {
-        const posts = await findPostsFromDB(req.params.category);
-        sendPostsList(req, res, posts);
+        const page = Number(req.query.page || '1');
+        if (req.params.category) {
+            const { docs, totalPages } = await DBManager.instance.findPostsInCategory(
+                req.params.category,
+                page
+            );
+            res.status(200).json({ posts: docs, totalLength: totalPages });
+        } else {
+            const { docs, totalPages } = await DBManager.instance.findAllPosts(page);
+            res.status(200).json({ posts: docs, totalLength: totalPages });
+        }
     } catch (error) {
         res.status(404).send(error.message);
     }
@@ -15,18 +22,14 @@ export async function getPosts(req: Request, res: Response) {
 
 export async function getPostsWithTag(req: Request, res: Response) {
     try {
-        const posts = await DBManager.instance.findPostsWithTag(req.params.tag);
-        sendPostsList(req, res, posts);
+        const page = Number(req.query.page || '1');
+        const { docs, totalPages } = await DBManager.instance.findPostsWithTag(
+            req.params.tag,
+            page
+        );
+        res.status(200).json({ posts: docs, totalLength: totalPages });
     } catch (error) {
         res.status(404).send(error.message);
-    }
-}
-
-export async function sendPostsList(req: Request, res: Response, posts: any[] | void) {
-    if (posts) {
-        const page = Number(req.query.page || 1) - 1;
-        const postsAtIndex = sliceByIndex(posts, page);
-        res.status(200).json({ posts: postsAtIndex, totalLength: posts.length });
     }
 }
 
@@ -78,16 +81,4 @@ export async function deletePost(req: Request, res: Response) {
     } catch (error) {
         res.status(404).send(error.message);
     }
-}
-
-async function findPostsFromDB(category: string | undefined) {
-    if (category) {
-        return await DBManager.instance.findPostsInCategory(category);
-    } else {
-        return await DBManager.instance.findAllPosts();
-    }
-}
-
-function sliceByIndex(posts: any[], page: number): any[] {
-    return posts.slice(page * maxPostsPerPage, page * maxPostsPerPage + maxPostsPerPage);
 }
