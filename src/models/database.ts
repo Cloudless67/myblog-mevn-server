@@ -91,7 +91,10 @@ export default class DatabaseManager {
                 totalPages: [{ $count: 'count' }],
             });
 
-        return { docs: query[0].docs, totalPages: query[0].totalPages[0].count };
+        const docs: any[] = query[0].docs;
+        const totalPages: number = query[0].totalPages[0].count;
+
+        return { docs, totalPages };
     }
 
     private async findCategories(where: object) {

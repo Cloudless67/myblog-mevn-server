@@ -10,10 +10,12 @@ export async function getPosts(req: Request, res: Response) {
                 req.params.category,
                 page
             );
-            res.status(200).json({ posts: docs, totalLength: totalPages });
+
+            res.status(200).json({ posts: preview(docs), totalLength: totalPages });
         } else {
             const { docs, totalPages } = await DBManager.instance.findAllPosts(page);
-            res.status(200).json({ posts: docs, totalLength: totalPages });
+
+            res.status(200).json({ posts: preview(docs), totalLength: totalPages });
         }
     } catch (error) {
         res.status(404).send(error.message);
@@ -27,7 +29,7 @@ export async function getPostsWithTag(req: Request, res: Response) {
             req.params.tag,
             page
         );
-        res.status(200).json({ posts: docs, totalLength: totalPages });
+        res.status(200).json({ posts: preview(docs), totalLength: totalPages });
     } catch (error) {
         res.status(404).send(error.message);
     }
@@ -86,4 +88,21 @@ export async function deletePost(req: Request, res: Response) {
     } catch (error) {
         res.status(404).send(error.message);
     }
+}
+
+function preview(docs: any[]): any[] {
+    return docs.map(x => {
+        return {
+            title: x.title,
+            url: x.url,
+            preview: bodyPreview(x.body),
+            writtenTime: x.writtenTime,
+            views: x.views,
+            repliesNum: x.repliesNum,
+        };
+    });
+}
+
+function bodyPreview(body: string) {
+    return body.substring(0, Math.min(body.indexOf('#') > 0 ? body.indexOf('#') : 160, 160));
 }
