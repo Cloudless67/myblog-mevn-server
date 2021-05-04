@@ -2,10 +2,10 @@ import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
 import logger from 'morgan';
-
 import history from 'connect-history-api-fallback';
 import helmet from 'helmet';
 import cspOptions from './cspOptions';
+import expressStaticGzip from 'express-static-gzip';
 
 import apiRouter from './routes/api';
 import DatabaseManager from './models/database';
@@ -20,6 +20,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/api', apiRouter);
+
+app.use(
+    '/',
+    expressStaticGzip(path.join(__dirname, 'public'), {
+        enableBrotli: true,
+        orderPreference: ['br'],
+    })
+);
 
 app.use(history());
 app.use(express.static(path.join(__dirname, 'public')));
