@@ -38,10 +38,10 @@ export async function getPost(req: Request, res: Response) {
         const url = decodeURI(req.params.slug);
         const post = await DBManager.instance.findOnePost({ url });
         if (post) {
+            res.json(post);
             if (!req.headers.authorization) {
                 DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
             }
-            res.json(post);
         }
     } catch (error) {
         res.status(404).send(error.message);
