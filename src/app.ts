@@ -21,6 +21,8 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/api', apiRouter);
 
+app.use(history());
+
 app.use(
     '/',
     expressStaticGzip(path.join(__dirname, 'public'), {
@@ -28,9 +30,6 @@ app.use(
         orderPreference: ['br'],
     })
 );
-
-app.use(history());
-app.use(express.static(path.join(__dirname, 'public')));
 
 if (process.env.NODE_ENV !== 'test') {
     DatabaseManager.instance.connect();
