@@ -1,8 +1,4 @@
 {
     "extends": "@tsconfig/node14/tsconfig.json",
-    "exclude": ["./node_modules/", "./dist/"],
-    "compilerOptions": {
-        "module": "commonjs",
-        "allowSyntheticDefaultImports": true
-    }
+    "exclude": ["./node_modules/", "./dist/"]
 }

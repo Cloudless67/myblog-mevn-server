@@ -37,7 +37,7 @@ describe('CRUD Operation to database', () => {
         await Database.instance.deleteCategory(updatedCategory);
         const category = (await Database.instance.findOneCategory(updatedCategory)) as any;
 
-        expect(category).toBeUndefined;
+        expect(category).toBeUndefined();
     });
 
     afterAll(async () => {
