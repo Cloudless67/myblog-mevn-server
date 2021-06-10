@@ -81,11 +81,16 @@ async function createCategory(category: CategoryObject, parent: string | undefin
 }
 
 export function structureCategories(categories: CategoryObject[]): Category[] {
-    const clone = deepCloneCategories(categories);
-    const structured: Category[] = [];
+    const structured: Category[] = categories.filter(category => category.isTopLevel);
 
-    clone.filter(x => x.isTopLevel).forEach(top => structured.push(appendChildren(top, clone)));
-    return structured;
+    function appendChildren(category: CategoryObject) {
+        if (category.children.length === 0) return category.name;
+        category.children = category.children.map(child =>
+            appendChildren(categories.find(c => c.name === child)!)
+        );
+        return category;
+    }
+    return structured.map(category => appendChildren(category as CategoryObject));
 }
 
 function categoryFromReq(req: Request): CategoryObject {
@@ -94,32 +99,6 @@ function categoryFromReq(req: Request): CategoryObject {
         isTopLevel: req.body.parent === undefined,
         children: [],
     };
-}
-
-function appendChildren(category: CategoryObject, clone: CategoryObject[]) {
-    category.children = category.children.map(strToObject(clone));
-    return category.children.length > 0 ? category : category.name;
-}
-
-function strToObject(clone: CategoryObject[]) {
-    return (child: Category) => {
-        if (typeof child === 'string') {
-            let newChild = clone.find(x => x.name === child) as CategoryObject;
-            if (newChild.children.length > 0) {
-                appendChildren(newChild, clone);
-                return newChild;
-            }
-        }
-        return child;
-    };
-}
-
-function deepCloneCategories(categories: CategoryObject[]): CategoryObject[] {
-    return categories.map(category => ({
-        name: category.name,
-        isTopLevel: category.isTopLevel,
-        children: [...category.children],
-    }));
 }
 
 type CategoryObject = {
