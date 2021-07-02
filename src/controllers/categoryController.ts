@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { ICategory } from '../models/category';
 import DBManager from '../models/database';
+import { Category, CategoryObject } from '../types';
 
 export async function getCategories(req: Request, res: Response) {
     try {
@@ -13,7 +15,7 @@ export async function getCategories(req: Request, res: Response) {
 export async function getStructuredCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
-        res.json(structureCategories(categories as any[]));
+        res.json(structureCategories(categories.map(CategoryObjectFromICategory)));
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -81,16 +83,24 @@ async function createCategory(category: CategoryObject, parent: string | undefin
 }
 
 export function structureCategories(categories: CategoryObject[]): Category[] {
-    const structured: Category[] = categories.filter(category => category.isTopLevel);
-
     function appendChildren(category: CategoryObject) {
         if (category.children.length === 0) return category.name;
+
         category.children = category.children.map(child =>
             appendChildren(categories.find(c => c.name === child)!)
         );
         return category;
     }
-    return structured.map(category => appendChildren(category as CategoryObject));
+
+    return categories.filter(category => category.isTopLevel).map(appendChildren);
+}
+
+function CategoryObjectFromICategory(icat: ICategory): CategoryObject {
+    return {
+        name: icat.name,
+        isTopLevel: icat.isTopLevel as boolean,
+        children: icat.children,
+    };
 }
 
 function categoryFromReq(req: Request): CategoryObject {
@@ -100,11 +110,3 @@ function categoryFromReq(req: Request): CategoryObject {
         children: [],
     };
 }
-
-type CategoryObject = {
-    name: string;
-    isTopLevel: boolean;
-    children: Array<Category>;
-};
-
-type Category = CategoryObject | string;

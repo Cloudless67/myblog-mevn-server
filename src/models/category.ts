@@ -1,4 +1,5 @@
 import { Document, Schema } from 'mongoose';
+import { CategoryObject } from '../types';
 
 const CategorySchema: Schema = new Schema();
 

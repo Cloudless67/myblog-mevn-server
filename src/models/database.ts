@@ -26,13 +26,14 @@ export default class DatabaseManager {
 
     public async connect(url?: string) {
         const uri = process.env.DB_URL! + (url || process.env.DB_DEFAULT!);
-        connect(uri, connectOptions);
 
-        console.log('Successfully connected to mongodb!');
-
-        connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-        this.updateModels();
+        try {
+            await connect(uri, connectOptions);
+            console.log('Successfully connected to mongodb!');
+            this.updateModels();
+        } catch (error) {
+            console.error('MongoDB connection error:', error);
+        }
     }
 
     public async disconnect() {
@@ -62,7 +63,7 @@ export default class DatabaseManager {
     }
 
     public async findAllCategories() {
-        return await this.Category.find({}).catch(this.throwError);
+        return await this.Category.find({});
     }
 
     public async findAllPosts(page: number) {

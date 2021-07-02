@@ -5,13 +5,13 @@ import DatabaseManager from '../models/database';
 
 let server: Server;
 
-beforeAll(async done => {
-    await DatabaseManager.instance.connect('test_rest');
-    server = app.listen(process.env.PORT || 3000, done);
+beforeAll(done => {
+    DatabaseManager.instance.connect('myblog').then(() => {
+        server = app.listen(process.env.PORT || 3000, done);
+    });
 });
 
 afterAll(async done => {
-    await DatabaseManager.instance.dropDatabase();
     await DatabaseManager.instance.disconnect();
     server.close();
     done();
@@ -19,20 +19,14 @@ afterAll(async done => {
 
 describe('GET /posts', () => {
     test('should respond with json:array', async done => {
-        const res = await request(app)
-            .get('/api/posts')
+        await request(app)
+            .get('/api/posts/')
             .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
             .expect(200)
+            .then(res => {
+                expect(res.body).toBeInstanceOf(Array);
+                done();
+            })
             .catch(done);
-
-        expect(res.body).toBeInstanceOf(Array);
-        done();
     });
 });
-
-// describe('GET /post', () => {
-//     test('should respond with json', async done => {
-//         const res = await request(app).get('/api/post/')
-//     });
-// });

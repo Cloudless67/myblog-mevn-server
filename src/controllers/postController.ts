@@ -10,7 +10,7 @@ export async function getPosts(req: Request, res: Response) {
                 req.params.category,
                 page
             );
-
+            console.log('asd');
             res.status(200).json({ posts: preview(docs), totalLength: totalPages });
         } else {
             const { docs, totalPages } = await DBManager.instance.findAllPosts(page);
