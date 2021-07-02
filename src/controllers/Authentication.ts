@@ -15,7 +15,7 @@ export async function signToken(req: Request, res: Response) {
     }
 }
 
-async function verifyPassword(password: any, res: Response) {
+async function verifyPassword(password: string, res: Response) {
     try {
         const auth = await bcrypt.compare(password, process.env.PASSWORD!);
         if (auth) {

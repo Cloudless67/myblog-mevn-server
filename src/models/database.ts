@@ -79,7 +79,7 @@ export default class DatabaseManager {
     }
 
     public async findOnePost(where: object) {
-        const doc = await this.Post.find(where).catch(this.throwError);
+        const doc = await this.Post.find(where);
         return doc instanceof Array ? doc[0] : doc;
     }
 
@@ -99,15 +99,15 @@ export default class DatabaseManager {
     }
 
     private async findCategories(where: object) {
-        return await this.Category.find(where).catch(this.throwError);
+        return await this.Category.find(where);
     }
 
     public async updateCategory(where: object, query: object) {
-        return await this.Category.updateOne(where, query).catch(this.throwError);
+        return await this.Category.updateOne(where, query);
     }
 
     public async updatePost(where: object, query: object) {
-        return await this.Post.updateOne(where, query).catch(this.throwError);
+        return await this.Post.updateOne(where, query);
     }
 
     public async postReply(postUrl: string, reply: object) {
@@ -125,15 +125,15 @@ export default class DatabaseManager {
     }
 
     public async deleteCategory(where: object) {
-        return await this.Category.deleteOne(where).catch(this.throwError);
+        return await this.Category.deleteOne(where);
     }
 
     public async deletePost(condition: object) {
-        return await this.Post.deleteOne(condition).catch(this.throwError);
+        return await this.Post.deleteOne(condition);
     }
 
     private async trySaveDocToDb(document: Document) {
-        return await document.save().catch(this.throwError);
+        return await document.save();
     }
 
     private constructor() {}
@@ -145,9 +145,5 @@ export default class DatabaseManager {
 
     public async dropDatabase() {
         await connection.dropDatabase();
-    }
-
-    private throwError(e: any): void {
-        throw e;
     }
 }

@@ -10,7 +10,6 @@ export async function getPosts(req: Request, res: Response) {
                 req.params.category,
                 page
             );
-            console.log('asd');
             res.status(200).json({ posts: preview(docs), totalLength: totalPages });
         } else {
             const { docs, totalPages } = await DBManager.instance.findAllPosts(page);
@@ -75,7 +74,6 @@ export async function putPost(req: Request, res: Response) {
         await DBManager.instance.updatePost({ url }, post);
         res.status(200).json({ url });
     } catch (error) {
-        console.log(req.body);
         res.status(400).send(error.message);
     }
 }

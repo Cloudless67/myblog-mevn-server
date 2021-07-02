@@ -30,7 +30,7 @@ export async function deleteReply(req: Request, res: Response) {
         }
     } else {
         try {
-            const post: any = await DBManager.instance.findOnePost({ url });
+            const post = await DBManager.instance.findOnePost({ url });
             const replies: Reply[] = post.replies;
             const hashed = replies.find(x => x._id.toString() === id)!.password;
 

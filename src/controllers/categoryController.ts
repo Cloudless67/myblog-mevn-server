@@ -6,7 +6,7 @@ import { Category, CategoryObject } from '../types';
 export async function getCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
-        if (categories) res.json(categories.map((x: any) => x.name));
+        res.json(categories.map((x: any) => x.name));
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -40,7 +40,7 @@ export async function putCategory(req: Request, res: Response) {
     try {
         await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
         if (parent) {
-            const x = await DBManager.instance.updateCategory(
+            await DBManager.instance.updateCategory(
                 { name: parent },
                 { $push: { children: name } }
             );
@@ -57,7 +57,7 @@ export async function putCategory(req: Request, res: Response) {
 }
 
 export async function deleteCategory(req: Request, res: Response) {
-    const name: string = req.params.name;
+    const name = req.params.name;
     try {
         await deleteCategoryFromDB(name);
         res.status(200).end();
@@ -67,14 +67,14 @@ export async function deleteCategory(req: Request, res: Response) {
 }
 
 async function deleteCategoryFromDB(name: string) {
-    const category = (await DBManager.instance.findOneCategory({ name })) as any;
+    const category = await DBManager.instance.findOneCategory({ name });
     if (!category) throw new Error('The category does not exists.');
     if (category.children) throw new Error('Can not delete category with children.');
     await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
     await DBManager.instance.deleteCategory({ name });
 }
 
-async function createCategory(category: CategoryObject, parent: string | undefined) {
+async function createCategory(category: CategoryObject, parent?: string) {
     await DBManager.instance.saveCategory(category);
     await DBManager.instance.updateCategory(
         { name: parent },
