@@ -47,8 +47,8 @@ const renderer = {
     // Override inline code
     codespan(code: string) {
         // It's kaTeX if first charactar is $
-        if (code[0] === '$') {
-            return katex.renderToString(code.substring(1), {
+        if (code.length >= 2 && code[0] === '$' && code[code.length - 1] === '$') {
+            return katex.renderToString(code.substring(1, code.length - 2), {
                 throwOnError: false,
             });
         } else {
@@ -77,13 +77,14 @@ const renderer = {
 const tokenizer = {
     // Match for inline $ ... $ syntax
     codespan(src: string) {
-        const match = src.match(/^([`$])(?=[^\s\d$`])([^`$]*?)\1(?![`$])/);
+        const match = src.match(/^([`$])([^\1]+?)\1/);
         if (match) {
+            console.log(match);
             return {
                 type: 'codespan',
                 raw: match[0],
-                // If codespan is TeX, put $ charactar
-                text: match[1] === '$' ? `$${match[2].trim()}` : match[2].trim(),
+                // If codespan is TeX, put ` charactar
+                text: match[1] === '$' ? `$${match[2].trim()}$` : match[2].trim(),
             };
         }
         return false;
