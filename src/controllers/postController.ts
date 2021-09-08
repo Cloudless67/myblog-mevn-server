@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import marked from '../marked';
 import DBManager from '../models/database';
+import { isError } from '../types/isError';
 
 export async function getPosts(req: Request, res: Response) {
     try {
@@ -17,7 +18,7 @@ export async function getPosts(req: Request, res: Response) {
             res.status(200).json({ posts: preview(docs), totalLength: totalPages });
         }
     } catch (error) {
-        res.status(404).send(error.message);
+        if (isError(error)) res.status(404).send(error.message);
     }
 }
 
@@ -30,7 +31,7 @@ export async function getPostsWithTag(req: Request, res: Response) {
         );
         res.status(200).json({ posts: preview(docs), totalLength: totalPages });
     } catch (error) {
-        res.status(404).send(error.message);
+        if (isError(error)) res.status(404).send(error.message);
     }
 }
 
@@ -47,7 +48,7 @@ export async function getPost(req: Request, res: Response) {
             res.json(post);
         }
     } catch (error) {
-        res.status(404).send(error.message);
+        if (isError(error)) res.status(404).send(error.message);
     }
 }
 
@@ -61,7 +62,7 @@ export async function postPost(req: Request, res: Response) {
         await DBManager.instance.savePost(post);
         res.status(200).json({ url: req.body.url });
     } catch (error) {
-        res.status(400).send(error.message);
+        if (isError(error)) res.status(400).send(error.message);
     }
 }
 
@@ -76,7 +77,7 @@ export async function putPost(req: Request, res: Response) {
         await DBManager.instance.updatePost({ url }, post);
         res.status(200).json({ url });
     } catch (error) {
-        res.status(400).send(error.message);
+        if (isError(error)) res.status(400).send(error.message);
     }
 }
 
@@ -86,7 +87,7 @@ export async function deletePost(req: Request, res: Response) {
         await DBManager.instance.deletePost({ url });
         res.sendStatus(200);
     } catch (error) {
-        res.status(404).send(error.message);
+        if (isError(error)) res.status(404).send(error.message);
     }
 }
 
