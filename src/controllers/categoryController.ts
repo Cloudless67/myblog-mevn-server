@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import { ICategory } from '../models/category';
 import DBManager from '../models/database';
 import { Category, CategoryObject } from '../types';
+import { isError } from '../types/isError';
 
 export async function getCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
         res.json(categories.map((x: any) => x.name));
     } catch (error) {
-        res.status(500).send(error.message);
+        if (isError(error)) res.status(500).send(error.message);
     }
 }
 
@@ -17,7 +18,7 @@ export async function getStructuredCategories(req: Request, res: Response) {
         const categories = await DBManager.instance.findAllCategories();
         res.json(structureCategories(categories.map(CategoryObjectFromICategory)));
     } catch (error) {
-        res.status(500).send(error.message);
+        if (isError(error)) res.status(500).send(error.message);
     }
 }
 
@@ -29,7 +30,7 @@ export async function postCategory(req: Request, res: Response) {
         await createCategory(newCategory, parent);
         res.status(200).end();
     } catch (error) {
-        res.status(409).send(error.message);
+        if (isError(error)) res.status(409).send(error.message);
     }
 }
 
@@ -51,7 +52,7 @@ export async function putCategory(req: Request, res: Response) {
         const categories = await DBManager.instance.findAllCategories();
         res.json(structureCategories(categories as any[]));
     } catch (error) {
-        res.status(400).send(error.message);
+        if (isError(error)) res.status(400).send(error.message);
         return;
     }
 }
@@ -62,7 +63,7 @@ export async function deleteCategory(req: Request, res: Response) {
         await deleteCategoryFromDB(name);
         res.status(200).end();
     } catch (error) {
-        res.status(400).send(error.message);
+        if (isError(error)) res.status(400).send(error.message);
     }
 }
 

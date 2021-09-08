@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { isError } from '../types/isError';
 
 const saltRounds = 10;
 
@@ -27,7 +28,7 @@ async function verifyPassword(password: string, res: Response) {
             res.status(403).send('Wrong password');
         }
     } catch (error) {
-        res.status(400).send(error.message);
+        if (isError(error)) res.status(400).send(error.message);
     }
 }
 
@@ -39,7 +40,7 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
             await jwt.verify(token, process.env.JWT_SECRET!);
             next();
         } catch (error) {
-            res.status(403).send(error.message);
+            if (isError(error)) res.status(403).send(error.message);
         }
     } else {
         res.status(403).send('Missing authentication header!');
