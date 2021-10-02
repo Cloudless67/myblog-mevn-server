@@ -11,22 +11,18 @@ beforeAll(done => {
     });
 });
 
-afterAll(async done => {
+afterAll(async () => {
     await DatabaseManager.instance.disconnect();
     server.close();
-    done();
 });
 
 describe('GET /posts', () => {
-    test('should respond with json:array', async done => {
-        await request(app)
+    test('should respond with json: array', async () => {
+        const res = await request(app)
             .get('/api/posts/')
             .set('Accept', 'application/json')
-            .expect(200)
-            .then(res => {
-                expect(res.body).toBeInstanceOf(Array);
-                done();
-            })
-            .catch(done);
+            .expect(200);
+
+        expect(res.body.posts).toBeInstanceOf(Array);
     });
 });
