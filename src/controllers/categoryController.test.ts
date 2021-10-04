@@ -1,6 +1,6 @@
 import * as CategoryController from './categoryController';
 
-describe('Category cotroller tests', () => {
+describe('Category controller tests', () => {
     test.only('should build category object correctly', () => {
         const categories = [
             {

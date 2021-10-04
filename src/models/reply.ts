@@ -14,22 +14,27 @@ ReplySchema.add({
     reReplies: [ReplySchema],
 });
 
+function createReplyDocument(nickname: string, password: string, body: string) {
+    const reply: Reply = {
+        _id: Types.ObjectId(),
+        nickname: nickname,
+        password: password,
+        body: body,
+        writtenTime: DateTime.now().toString(),
+        reReplies: [],
+    };
+    return reply;
+}
+
 export default ReplySchema;
 
-export class Reply {
+export { createReplyDocument };
+
+export type Reply = {
     _id: Types.ObjectId;
     nickname: string;
     body: string;
     password: string;
     writtenTime: string;
-    reReplies: any[];
-
-    public constructor(nickname: string, password: string, body: string) {
-        this._id = Types.ObjectId();
-        this.nickname = nickname;
-        this.password = password;
-        this.body = body;
-        this.writtenTime = DateTime.now().toString();
-        this.reReplies = [];
-    }
-}
+    reReplies: Reply[];
+};

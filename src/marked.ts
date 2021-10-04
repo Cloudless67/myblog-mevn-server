@@ -1,7 +1,7 @@
-const marked = require('marked');
-const Prism = require('prismjs');
-const katex = require('katex');
-const loadLanguages = require('prismjs/components/');
+import marked, { Renderer, RendererObject, Tokenizer, TokenizerObject } from 'marked';
+import Prism from 'prismjs';
+import katex from 'katex';
+import loadLanguages from 'prismjs/components/';
 
 function escapeHtml(unsafe: string) {
     return unsafe
@@ -16,21 +16,20 @@ function escapeHtml(unsafe: string) {
 loadLanguages();
 
 Prism.languages.insertBefore('bash', 'variable', {
-    variable: /\-[\-\w]+/,
+    variable: /-[-\w]+/,
 });
 
-new Prism.Token();
-
-const renderer = {
+const renderer: RendererObject = {
     // Override code block
     code(code: string, infostring: string) {
         if (infostring === 'Math') {
-            return `<span class="katex-display">
-            ${katex.renderToString(code, {
+            const katexRendered = katex.renderToString(code, {
                 displayMode: true,
                 output: 'html',
                 throwOnError: false,
-            })}
+            });
+            return `<span class="katex-display">
+            ${katexRendered}
             </span>`;
         } else {
             try {
@@ -56,25 +55,21 @@ const renderer = {
             return `<code class = "inline-code">${escapeHtml(code)}</code>`;
         }
     },
-    listitem(text: string, task: string) {
-        if (task) {
-            return `<li class="task-list-item">${text}</li>`;
-        } else {
-            return '<li>' + text + '</li>\n';
-        }
+    listitem(text: string) {
+        return '<li>' + text + '</li>\n';
     },
     checkbox(checked: boolean) {
         return (
             '<input ' +
             (checked ? 'checked="" ' : '') +
             'type="checkbox"' +
-            ((this as any).options.xhtml ? ' /' : '') +
+            ((this as Renderer).options.xhtml ? ' /' : '') +
             '> '
         );
     },
 };
 
-const tokenizer = {
+const tokenizer: TokenizerObject = {
     // Match for inline $ ... $ syntax
     codespan(src: string) {
         const match = src.match(/^([`$])([^\1]+?)\1/);
@@ -90,13 +85,13 @@ const tokenizer = {
         return false;
     },
     // Disable inline text when meeting $ inline
-    inlineText(src: string, inRawBlock: boolean, smartypants: any) {
+    inlineText(src: string, inRawBlock: boolean, smartypants: (cap: string) => string) {
         const cap = src.match(
-            /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<!\[`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/
+            /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/
         );
-        const options = (this as any).options;
+        const options = (this as Tokenizer).options;
         if (cap) {
-            var text;
+            let text: string;
             if (inRawBlock) {
                 text = options.sanitize
                     ? options.sanitizer
@@ -108,15 +103,16 @@ const tokenizer = {
             }
             return {
                 type: 'text',
-                raw: cap[0],
+                raw: cap[0] as string,
                 text: text,
             };
         }
+        return false;
     },
     // Match for $$ ... $$ blocks
     fences(src: string) {
         const cap = src.match(
-            /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`\$]* *(?:\n+|$)|$)/
+            /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`$]* *(?:\n+|$)|$)/
         );
         if (cap) {
             return {
@@ -128,6 +124,7 @@ const tokenizer = {
                 text: cap[3],
             };
         }
+        return false;
     },
 };
 

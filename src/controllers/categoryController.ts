@@ -7,7 +7,7 @@ import { isError } from '../types/isError';
 export async function getCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
-        res.json(categories.map((x: any) => x.name));
+        res.json(categories.map(x => x.name));
     } catch (error) {
         if (isError(error)) res.status(500).send(error.message);
     }
@@ -50,7 +50,7 @@ export async function putCategory(req: Request, res: Response) {
             await DBManager.instance.updateCategory({ name }, { isTopLevel: true });
         }
         const categories = await DBManager.instance.findAllCategories();
-        res.json(structureCategories(categories as any[]));
+        res.json(structureCategories(categories as CategoryObject[]));
     } catch (error) {
         if (isError(error)) res.status(400).send(error.message);
         return;
@@ -87,9 +87,11 @@ export function structureCategories(categories: CategoryObject[]): Category[] {
     function appendChildren(category: CategoryObject) {
         if (category.children.length === 0) return category.name;
 
-        category.children = category.children.map(child =>
-            appendChildren(categories.find(c => c.name === child)!)
-        );
+        category.children = category.children.map(child => {
+            const childCategory = categories.find(c => c.name === child);
+            if (childCategory) return appendChildren(childCategory);
+            else throw new Error('Something wrong in category data');
+        });
         return category;
     }
 

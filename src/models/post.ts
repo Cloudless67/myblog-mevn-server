@@ -1,6 +1,6 @@
 import { Document, Schema } from 'mongoose';
 import { DateTime } from 'luxon';
-import ReplySchema from './reply';
+import ReplySchema, { Reply } from './reply';
 
 const PostSchema: Schema = new Schema({
     title: {
@@ -53,6 +53,6 @@ export interface IPost extends Document {
     tags: string[];
     writtenTime: Date;
     views: number;
-    replies: any[];
+    replies: Reply[];
     repliesNum: number;
 }

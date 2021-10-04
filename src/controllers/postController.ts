@@ -2,6 +2,16 @@ import { Request, Response } from 'express';
 import marked from '../marked';
 import DBManager from '../models/database';
 import { isError } from '../types/isError';
+import Post from '../types/post';
+
+type Preview = {
+    title: string;
+    url: string;
+    preview: string;
+    writtenTime: string;
+    views: number;
+    repliesNum: number;
+};
 
 export async function getPosts(req: Request, res: Response) {
     try {
@@ -91,7 +101,7 @@ export async function deletePost(req: Request, res: Response) {
     }
 }
 
-function preview(docs: any[]): any[] {
+function preview(docs: Post[]): Preview[] {
     return docs.map(x => {
         return {
             title: x.title,
