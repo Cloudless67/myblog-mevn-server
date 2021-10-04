@@ -17,6 +17,6 @@ export default CategorySchema;
 
 export interface ICategory extends Document {
     name: string;
-    isTopLevel: Boolean;
+    isTopLevel: boolean;
     children: string[];
 }

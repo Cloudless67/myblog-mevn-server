@@ -1,6 +1,17 @@
-import { connect, connection, disconnect, Document, Model } from 'mongoose';
+import {
+    connect,
+    connection,
+    disconnect,
+    Document,
+    FilterQuery,
+    Model,
+    UpdateQuery,
+} from 'mongoose';
 import CategorySchema, { ICategory } from './category';
 import PostSchema, { IPost } from './post';
+import Post from '../types/post';
+import { CategoryObject } from '../types';
+import Reply from '../types/reply';
 
 type ValidSubdomains = 'www' | 'ee';
 
@@ -25,7 +36,10 @@ export default class DatabaseManager {
     }
 
     public async connect(url?: string) {
-        const uri = process.env.DB_URL! + (url || process.env.DB_DEFAULT!);
+        const DB_URL = process.env.DB_URL || '';
+        const DB_DEFAULT = process.env.DB_DEFAULT || '';
+
+        const uri = DB_URL + (url || DB_DEFAULT);
 
         try {
             await connect(uri, connectOptions);
@@ -49,15 +63,15 @@ export default class DatabaseManager {
         this.updateModels();
     }
 
-    public async saveCategory(category: object) {
+    public async saveCategory(category: CategoryObject) {
         return await this.trySaveDocToDb(new this.Category(category));
     }
 
-    public async savePost(post: object) {
+    public async savePost(post: Post) {
         return await this.trySaveDocToDb(new this.Post(post));
     }
 
-    public async findOneCategory(where: object) {
+    public async findOneCategory(where: FilterQuery<ICategory>) {
         const doc = await this.findCategories(where);
         return doc instanceof Array ? doc[0] : doc;
     }
@@ -78,12 +92,12 @@ export default class DatabaseManager {
         return await this.findPosts({ tags: tag }, page);
     }
 
-    public async findOnePost(where: object) {
+    public async findOnePost(where: FilterQuery<IPost>) {
         const doc = await this.Post.find(where);
         return doc instanceof Array ? doc[0] : doc;
     }
 
-    private async findPosts(where: object, page: number) {
+    private async findPosts(where: FilterQuery<IPost>, page: number) {
         const postPerPage = 10;
         const query = await this.Post.aggregate()
             .match(where)
@@ -92,26 +106,26 @@ export default class DatabaseManager {
                 totalPages: [{ $count: 'count' }],
             });
 
-        const docs: any[] = query[0].docs;
+        const docs: Post[] = query[0].docs;
         const totalPages: number = query[0].totalPages[0].count;
 
         return { docs, totalPages };
     }
 
-    private async findCategories(where: object) {
+    private async findCategories(where: FilterQuery<ICategory>) {
         return await this.Category.find(where);
     }
 
-    public async updateCategory(where: object, query: object) {
+    public async updateCategory(where: FilterQuery<ICategory>, query: UpdateQuery<ICategory>) {
         return await this.Category.updateOne(where, query);
     }
 
-    public async updatePost(where: object, query: object) {
+    public async updatePost(where: FilterQuery<IPost>, query: UpdateQuery<IPost>) {
         return await this.Post.updateOne(where, query);
     }
 
-    public async postReply(postUrl: string, reply: object) {
-        const res = await this.updatePost(
+    public async postReply(postUrl: string, reply: Reply) {
+        await this.updatePost(
             { url: postUrl },
             { $push: { replies: reply }, $inc: { repliesNum: 1 } }
         );
@@ -124,19 +138,17 @@ export default class DatabaseManager {
         );
     }
 
-    public async deleteCategory(where: object) {
+    public async deleteCategory(where: FilterQuery<ICategory>) {
         return await this.Category.deleteOne(where);
     }
 
-    public async deletePost(condition: object) {
+    public async deletePost(condition: FilterQuery<IPost>) {
         return await this.Post.deleteOne(condition);
     }
 
     private async trySaveDocToDb(document: Document) {
         return await document.save();
     }
-
-    private constructor() {}
 
     private updateModels(): void {
         this.Category = connection.model<ICategory>('Category', CategorySchema);
