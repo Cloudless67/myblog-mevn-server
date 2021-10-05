@@ -10,6 +10,8 @@
         "test": "jest",
         "lint:es": "npx eslint .",
         "lint:es:fix": "npx eslint . --fix",
+        "prettier": "npx prettier -c .",
+        "style": "npm run lint:es && npm run prettier",
         "prepare": "husky install"
     },
     "author": "Cloudless67",
