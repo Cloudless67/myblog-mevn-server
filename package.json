@@ -10,6 +10,8 @@
         "test": "jest",
         "lint:es": "npx eslint .",
         "lint:es:fix": "npx eslint . --fix",
+        "prettier": "npx prettier -c .",
+        "style": "npm run lint:es && npm run prettier",
         "prepare": "husky install"
     },
     "author": "Cloudless67",
@@ -32,6 +34,7 @@
         "@typescript-eslint/eslint-plugin": "^4.32.0",
         "@typescript-eslint/parser": "^4.32.0",
         "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
         "gulp": "^4.0.2",
         "gulp-nodemon": "^2.5.0",
         "gulp-typescript": "^6.0.0-alpha.1",
