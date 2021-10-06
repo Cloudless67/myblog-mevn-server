@@ -22,6 +22,17 @@
         "quotes": ["error", "single", { "avoidEscape": true }],
         "semi": ["error", "always"],
         "@typescript-eslint/explicit-module-boundary-types": "off",
+        "import/order": [
+            "error",
+            {
+                "pathGroups": [
+                    {
+                        "pattern": "~/**",
+                        "group": "external"
+                    }
+                ]
+            }
+        ],
         "import/exports-last": ["error"]
     }
 }

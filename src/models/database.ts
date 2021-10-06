@@ -7,11 +7,11 @@ import {
     Model,
     UpdateQuery,
 } from 'mongoose';
-import CategorySchema, { ICategory } from './category';
-import PostSchema, { IPost } from './post';
 import Post from '../types/post';
 import { CategoryObject } from '../types';
 import Reply from '../types/reply';
+import PostSchema, { IPost } from './post';
+import CategorySchema, { ICategory } from './category';
 
 type ValidSubdomains = 'www' | 'ee';
 

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { createReplyDocument, Reply } from '../models/reply';
 import DBManager from '../models/database';
-import { compare, hash, isValidToken } from './Authentication';
 import { isError } from '../types/isError';
+import { compare, hash, isValidToken } from './Authentication';
 
 async function postReply(req: Request, res: Response) {
     try {
