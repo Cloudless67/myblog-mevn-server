@@ -5,8 +5,8 @@
     },
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended",
         "plugin:import/recommended",
+        "plugin:@typescript-eslint/recommended",
         "plugin:import/typescript",
         "prettier"
     ],
@@ -21,6 +21,7 @@
         "linebreak-style": ["error", "unix"],
         "quotes": ["error", "single", { "avoidEscape": true }],
         "semi": ["error", "always"],
-        "@typescript-eslint/explicit-module-boundary-types": "off"
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "import/exports-last": ["error"]
     }
 }

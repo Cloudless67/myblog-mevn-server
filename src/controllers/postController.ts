@@ -13,7 +13,7 @@ type Preview = {
     repliesNum: number;
 };
 
-export async function getPosts(req: Request, res: Response) {
+async function getPosts(req: Request, res: Response) {
     try {
         const page = Number(req.query.page || '1');
         if (req.params.category) {
@@ -32,7 +32,7 @@ export async function getPosts(req: Request, res: Response) {
     }
 }
 
-export async function getPostsWithTag(req: Request, res: Response) {
+async function getPostsWithTag(req: Request, res: Response) {
     try {
         const page = Number(req.query.page || '1');
         const { docs, totalPages } = await DBManager.instance.findPostsWithTag(
@@ -45,7 +45,7 @@ export async function getPostsWithTag(req: Request, res: Response) {
     }
 }
 
-export async function getPost(req: Request, res: Response) {
+async function getPost(req: Request, res: Response) {
     try {
         const url = decodeURI(req.params.slug);
         const post = await DBManager.instance.findOnePost({ url });
@@ -62,7 +62,7 @@ export async function getPost(req: Request, res: Response) {
     }
 }
 
-export async function postPost(req: Request, res: Response) {
+async function postPost(req: Request, res: Response) {
     try {
         const post = {
             ...req.body,
@@ -76,7 +76,7 @@ export async function postPost(req: Request, res: Response) {
     }
 }
 
-export async function putPost(req: Request, res: Response) {
+async function putPost(req: Request, res: Response) {
     try {
         const url = decodeURI(req.params.slug);
         const post = {
@@ -91,7 +91,7 @@ export async function putPost(req: Request, res: Response) {
     }
 }
 
-export async function deletePost(req: Request, res: Response) {
+async function deletePost(req: Request, res: Response) {
     try {
         const url = decodeURI(req.params.slug);
         await DBManager.instance.deletePost({ url });
@@ -117,3 +117,5 @@ function preview(docs: Post[]): Preview[] {
 function bodyPreview(body: string) {
     return body.substring(0, Math.min(body.indexOf('#') > 0 ? body.indexOf('#') : 160, 160));
 }
+
+export { getPosts, getPostsWithTag, getPost, postPost, putPost, deletePost };
