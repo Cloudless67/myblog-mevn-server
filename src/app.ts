@@ -1,11 +1,11 @@
+import path from 'path';
 import dotenv from 'dotenv';
 import express from 'express';
-import path from 'path';
 import logger from 'morgan';
 import history from 'connect-history-api-fallback';
 import helmet from 'helmet';
-import cspOptions from './cspOptions';
 import expressStaticGzip from 'express-static-gzip';
+import cspOptions from './cspOptions';
 
 import apiRouter from './routes/api';
 import DatabaseManager from './models/database';

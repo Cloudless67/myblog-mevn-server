@@ -4,7 +4,7 @@ import DBManager from '../models/database';
 import { Category, CategoryObject } from '../types';
 import { isError } from '../types/isError';
 
-export async function getCategories(req: Request, res: Response) {
+async function getCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
         res.json(categories.map(x => x.name));
@@ -13,7 +13,7 @@ export async function getCategories(req: Request, res: Response) {
     }
 }
 
-export async function getStructuredCategories(req: Request, res: Response) {
+async function getStructuredCategories(req: Request, res: Response) {
     try {
         const categories = await DBManager.instance.findAllCategories();
         res.json(structureCategories(categories.map(CategoryObjectFromICategory)));
@@ -22,7 +22,7 @@ export async function getStructuredCategories(req: Request, res: Response) {
     }
 }
 
-export async function postCategory(req: Request, res: Response) {
+async function postCategory(req: Request, res: Response) {
     const parent: string | undefined = req.body.parent;
     const newCategory = categoryFromReq(req);
 
@@ -34,7 +34,7 @@ export async function postCategory(req: Request, res: Response) {
     }
 }
 
-export async function putCategory(req: Request, res: Response) {
+async function putCategory(req: Request, res: Response) {
     const parent = req.body.parent;
     const name = req.params.name;
 
@@ -57,7 +57,7 @@ export async function putCategory(req: Request, res: Response) {
     }
 }
 
-export async function deleteCategory(req: Request, res: Response) {
+async function deleteCategory(req: Request, res: Response) {
     const name = req.params.name;
     try {
         await deleteCategoryFromDB(name);
@@ -83,7 +83,7 @@ async function createCategory(category: CategoryObject, parent?: string) {
     );
 }
 
-export function structureCategories(categories: CategoryObject[]): Category[] {
+function structureCategories(categories: CategoryObject[]): Category[] {
     function appendChildren(category: CategoryObject) {
         if (category.children.length === 0) return category.name;
 
@@ -113,3 +113,12 @@ function categoryFromReq(req: Request): CategoryObject {
         children: [],
     };
 }
+
+export {
+    getCategories,
+    getStructuredCategories,
+    postCategory,
+    putCategory,
+    deleteCategory,
+    structureCategories,
+};

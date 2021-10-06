@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { createReplyDocument, Reply } from '../models/reply';
 import DBManager from '../models/database';
-import { compare, hash, isValidToken } from './Authentication';
 import { isError } from '../types/isError';
+import { compare, hash, isValidToken } from './Authentication';
 
-export async function postReply(req: Request, res: Response) {
+async function postReply(req: Request, res: Response) {
     try {
         const url = decodeURI(req.params.slug);
         req.body.password = await hash(req.body.password);
@@ -18,7 +18,7 @@ export async function postReply(req: Request, res: Response) {
     }
 }
 
-export async function deleteReply(req: Request, res: Response) {
+async function deleteReply(req: Request, res: Response) {
     const url = decodeURI(req.params.slug);
     const id = req.params.id;
 
@@ -46,3 +46,5 @@ export async function deleteReply(req: Request, res: Response) {
         }
     }
 }
+
+export { postReply, deleteReply };

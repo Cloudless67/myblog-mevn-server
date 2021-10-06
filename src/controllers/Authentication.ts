@@ -5,7 +5,7 @@ import { isError } from '../types/isError';
 
 const SALT_ROUNDS = 10;
 
-export async function signToken(req: Request, res: Response) {
+async function signToken(req: Request, res: Response) {
     const id = req.body.id;
     const password = req.body.password;
 
@@ -35,7 +35,7 @@ async function verifyPassword(password: string, res: Response) {
     }
 }
 
-export async function verifyToken(req: Request, res: Response, next: NextFunction) {
+async function verifyToken(req: Request, res: Response, next: NextFunction) {
     const JWT_SECRET = process.env.JWT_SECRET || '';
 
     const authHeader = req.headers.authorization;
@@ -52,7 +52,7 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
     }
 }
 
-export function isValidToken(token: string) {
+function isValidToken(token: string) {
     const JWT_SECRET = process.env.JWT_SECRET || '';
 
     try {
@@ -63,10 +63,12 @@ export function isValidToken(token: string) {
     }
 }
 
-export async function hash(plain: string) {
+async function hash(plain: string) {
     return await bcrypt.hash(plain, SALT_ROUNDS);
 }
 
-export async function compare(plain: string, hashed: string) {
+async function compare(plain: string, hashed: string) {
     return await bcrypt.compare(plain, hashed);
 }
+
+export { signToken, verifyToken, isValidToken, hash, compare };
