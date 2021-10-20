@@ -16,7 +16,8 @@ function escapeHtml(unsafe: string) {
 loadLanguages();
 
 Prism.languages.insertBefore('bash', 'variable', {
-    variable: /-[-\w]+/,
+    variable: /\B(--[\w-]+|-\w)/,
+    function: /^\w+/m,
 });
 
 const renderer: RendererObject = {
