@@ -5,8 +5,8 @@
     "main": "app.js",
     "scripts": {
         "start": "node dist/app",
-        "dev": "nodemon src/app.ts",
-        "build": "gulp",
+        "dev": "ts-node-dev --transpile-only src/app.ts",
+        "build": "tsc",
         "test": "jest",
         "lint:es": "npx eslint .",
         "lint:es:fix": "npx eslint . --fix",
