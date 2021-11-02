@@ -12,6 +12,9 @@ import DatabaseManager from './models/database';
 
 dotenv.config();
 
+const NODE_ENV = process.env.NODE_ENV;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+
 const app = express();
 
 app.use(helmet({ contentSecurityPolicy: cspOptions }));
@@ -31,10 +34,10 @@ app.use(
     })
 );
 
-if (process.env.NODE_ENV !== 'test') {
+if (NODE_ENV !== 'test') {
     DatabaseManager.instance.connect();
-    app.listen(process.env.PORT || 3000, () => {
-        console.log(`Server listening on port ${process.env.PORT || 3000}`);
+    app.listen(PORT, () => {
+        console.log(`Server listening on port ${PORT}`);
     });
 }
 
