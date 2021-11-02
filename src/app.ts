@@ -1,10 +1,12 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import express from 'express';
+import session from 'express-session';
 import logger from 'morgan';
 import history from 'connect-history-api-fallback';
 import helmet from 'helmet';
 import expressStaticGzip from 'express-static-gzip';
+import MongoStore from 'connect-mongo';
 import cspOptions from './cspOptions';
 
 import apiRouter from './routes/api';
@@ -14,6 +16,8 @@ dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV;
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+const DB_URL = (process.env.DB_URL || '') + (process.env.DB_DEFAULT || '');
+const SECRET = process.env.JWT_SECRET || 'secret';
 
 const app = express();
 
@@ -21,6 +25,18 @@ app.use(helmet({ contentSecurityPolicy: cspOptions }));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(
+    session({
+        secret: SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: true, httpOnly: true },
+        store: MongoStore.create({
+            mongoUrl: DB_URL,
+        }),
+    })
+);
 
 app.use('/api', apiRouter);
 
