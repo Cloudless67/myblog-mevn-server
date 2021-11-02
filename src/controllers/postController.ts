@@ -4,6 +4,12 @@ import DBManager from '../models/database';
 import { isError } from '../types/isError';
 import Post from '../types/post';
 
+declare module 'express-session' {
+    interface Session {
+        visited?: string[];
+    }
+}
+
 type Preview = {
     title: string;
     url: string;
@@ -51,14 +57,31 @@ async function getPost(req: Request, res: Response) {
         const post = await DBManager.instance.findOnePost({ url });
         if (post) {
             const auth = req.headers.authorization;
+            const isLoggedIn = auth && auth.split(' ')[1] !== 'null';
+            const visitedPost = req.session.visited;
 
-            if (auth === undefined || auth.split(' ')[1] === 'null') {
-                DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
+            if (visitedPost && visitedPost.includes(url)) {
+                const visited = visitedPost.includes(url);
+
+                if (!visited) {
+                    incrementViewIfNotLoggedIn(isLoggedIn, url);
+                    req.session.visited = [...visitedPost, url];
+                }
+            } else {
+                incrementViewIfNotLoggedIn(isLoggedIn, url);
+                req.session.visited = [url];
             }
+            req.session.save();
             res.json(post);
         }
     } catch (error) {
         if (isError(error)) res.status(404).send(error.message);
+    }
+
+    function incrementViewIfNotLoggedIn(isLoggedIn: string | boolean | undefined, url: string) {
+        if (!isLoggedIn) {
+            DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
+        }
     }
 }
 

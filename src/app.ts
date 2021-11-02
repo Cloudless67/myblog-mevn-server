@@ -30,8 +30,8 @@ app.use(
     session({
         secret: SECRET,
         resave: false,
-        saveUninitialized: true,
-        cookie: { secure: true, httpOnly: true },
+        saveUninitialized: false,
+        cookie: { secure: NODE_ENV === 'production', httpOnly: true, maxAge: 24 * 60 * 60 * 1000 },
         store: MongoStore.create({
             mongoUrl: DB_URL,
         }),
