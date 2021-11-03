@@ -52,36 +52,26 @@ async function getPostsWithTag(req: Request, res: Response) {
 }
 
 async function getPost(req: Request, res: Response) {
+    const url = decodeURI(req.params.slug);
+    const auth = req.headers.authorization;
+    const isLoggedIn = auth !== undefined && auth.split(' ')[1] !== 'null';
+
     try {
-        const url = decodeURI(req.params.slug);
         const post = await DBManager.instance.findOnePost({ url });
+
         if (post) {
-            const auth = req.headers.authorization;
-            const isLoggedIn = auth && auth.split(' ')[1] !== 'null';
             const visitedPost = req.session.visited;
+            const isFirstVisit = visitedPost === undefined || !visitedPost.includes(url);
 
-            if (visitedPost && visitedPost.includes(url)) {
-                const visited = visitedPost.includes(url);
-
-                if (!visited) {
-                    incrementViewIfNotLoggedIn(isLoggedIn, url);
-                    req.session.visited = [...visitedPost, url];
-                }
-            } else {
-                incrementViewIfNotLoggedIn(isLoggedIn, url);
-                req.session.visited = [url];
+            if (!isLoggedIn && isFirstVisit) {
+                DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
+                req.session.visited = visitedPost ? [...visitedPost, url] : [url];
+                req.session.save();
             }
-            req.session.save();
             res.json(post);
         }
     } catch (error) {
         if (isError(error)) res.status(404).send(error.message);
-    }
-
-    function incrementViewIfNotLoggedIn(isLoggedIn: string | boolean | undefined, url: string) {
-        if (!isLoggedIn) {
-            DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
-        }
     }
 }
 
