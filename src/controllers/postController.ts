@@ -4,6 +4,12 @@ import DBManager from '../models/database';
 import { isError } from '../types/isError';
 import Post from '../types/post';
 
+declare module 'express-session' {
+    interface Session {
+        visited?: string[];
+    }
+}
+
 type Preview = {
     title: string;
     url: string;
@@ -46,14 +52,21 @@ async function getPostsWithTag(req: Request, res: Response) {
 }
 
 async function getPost(req: Request, res: Response) {
-    try {
-        const url = decodeURI(req.params.slug);
-        const post = await DBManager.instance.findOnePost({ url });
-        if (post) {
-            const auth = req.headers.authorization;
+    const url = decodeURI(req.params.slug);
+    const auth = req.headers.authorization;
+    const isLoggedIn = auth !== undefined && auth.split(' ')[1] !== 'null';
 
-            if (auth === undefined || auth.split(' ')[1] === 'null') {
+    try {
+        const post = await DBManager.instance.findOnePost({ url });
+
+        if (post) {
+            const visitedPost = req.session.visited;
+            const isFirstVisit = visitedPost === undefined || !visitedPost.includes(url);
+
+            if (!isLoggedIn && isFirstVisit) {
                 DBManager.instance.updatePost({ url }, { $inc: { views: 1 } });
+                req.session.visited = visitedPost ? [...visitedPost, url] : [url];
+                req.session.save();
             }
             res.json(post);
         }
