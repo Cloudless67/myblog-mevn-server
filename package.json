@@ -2,7 +2,7 @@
     "name": "server",
     "version": "1.0.0",
     "description": "Backend of my blog",
-    "main": "app.js",
+    "main": "src/app.ts",
     "scripts": {
         "start": "node dist/app",
         "dev": "ts-node-dev --transpile-only src/app.ts",
