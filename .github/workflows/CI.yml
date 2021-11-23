@@ -33,5 +33,12 @@ jobs:
               if: steps.node-cache.outputs.cache-hit != 'true'
               run: npm ci
 
-            - name: Style check
+            - name: Lint & Prettier
               run: npm run style
+
+            - name: Build
+              run: npm run build
+
+concurrency:
+    group: ${{ github.head_ref }}
+    cancel-in-progress: true
