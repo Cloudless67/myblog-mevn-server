@@ -36,6 +36,9 @@ jobs:
             - name: Lint & Prettier
               run: npm run style
 
+            - name: Test
+              run: npm run test
+
             - name: Build
               run: npm run build
 
