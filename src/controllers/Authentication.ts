@@ -73,4 +73,4 @@ async function compare(plain: string, hashed: string) {
     return await bcrypt.compare(plain, hashed);
 }
 
-export { signToken, verifyToken, isValidToken, hash, compare };
+export { signToken, verifyToken, isValidToken, hash, compare, verifyPassword };
