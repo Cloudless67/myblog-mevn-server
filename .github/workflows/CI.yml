@@ -14,7 +14,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Use Node.js 16.x
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@v2
               with:
                   node-version: 16.x
 
@@ -36,11 +36,11 @@ jobs:
             - name: Lint & Prettier
               run: npm run style
 
-            - name: Test
-              run: npm run test
-
             - name: Build
               run: npm run build
+
+            - name: Test
+              run: npm run test
 
 concurrency:
     group: ${{ github.head_ref }}
