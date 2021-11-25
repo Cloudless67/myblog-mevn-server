@@ -24,22 +24,22 @@ jobs:
               env:
                   cache-name: cache-node-modules
               with:
-                  path: node_modules
-                  key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node-modules-
+                  path: ~/.npm
+                  key: npm-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: npm-
 
             - name: Install dependencies
               if: steps.node-cache.outputs.cache-hit != 'true'
               run: npm ci
 
             - name: create env file
-              env:
-                  RAW_PASSWORD: ${{ secrets.RAW_PASSWORD }}
-                  JWT_SECRET: ${{ secrets.JWT_SECRET }}
               shell: bash
               run: |
-                  echo "$ENVIORNMENT_VARIABLES" > .env
+                  touch .env
+                  echo PASSWORD = ${{ secrets.PASSWORD }} >> .env
+                  echo RAW_PASSWORD = ${{ secrets.RAW_PASSWORD }} >> .env
+                  echo JWT_SECRET = ${{ secrets.JWT_SECRET }} >> .env
+                  cat .env
 
             - name: Lint & Prettier
               run: npm run style
