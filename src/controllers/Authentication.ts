@@ -12,11 +12,12 @@ async function signToken(req: Request, res: Response) {
     if (id !== process.env.ID) {
         res.status(403).send('Invalid userID');
     } else {
-        await verifyPassword(password, res);
+        const { status, payload } = await verifyPassword(password);
+        res.status(status).send(payload);
     }
 }
 
-async function verifyPassword(password: string, res: Response) {
+async function verifyPassword(password: string) {
     const PASSWORD = process.env.PASSWORD || '';
     const JWT_SECRET = process.env.JWT_SECRET || '';
 
@@ -26,12 +27,13 @@ async function verifyPassword(password: string, res: Response) {
             const token = jwt.sign({ authorized: true }, JWT_SECRET, {
                 expiresIn: '1d',
             });
-            res.status(200).json({ token });
+            return { status: 200, payload: { token } };
         } else {
-            res.status(403).send('Wrong password');
+            return { status: 403, payload: 'Wrong password' };
         }
     } catch (error) {
-        if (isError(error)) res.status(400).send(error.message);
+        if (isError(error)) return { status: 403, payload: error.message };
+        else return { status: 400, payload: 'Unknown error occurred.' };
     }
 }
 
@@ -71,4 +73,4 @@ async function compare(plain: string, hashed: string) {
     return await bcrypt.compare(plain, hashed);
 }
 
-export { signToken, verifyToken, isValidToken, hash, compare };
+export { signToken, verifyToken, isValidToken, hash, compare, verifyPassword };
