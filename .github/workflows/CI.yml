@@ -8,38 +8,48 @@ on:
     workflow_dispatch:
 
 jobs:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-        - uses: actions/checkout@v2
-        - name: Use Node.js 16.x
-          uses: actions/setup-node@v2
-          with:
-              node-version: 16.x
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use Node.js 16.x
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 16.x
 
-        - name: Cache node modules
-          id: node-cache
-          uses: actions/cache@v2
-          env:
-              cache-name: cache-node-modules
-          with:
-              path: node_modules
-              key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-              restore-keys: |
-                  ${{ runner.os }}-node-modules-
+            - name: Cache node modules
+              id: node-cache
+              uses: actions/cache@v2
+              env:
+                  cache-name: cache-node-modules
+              with:
+                  path: node_modules
+                  key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-modules-
 
-        - name: Install dependencies
-          if: steps.node-cache.outputs.cache-hit != 'true'
-          run: npm ci
+            - name: Install dependencies
+              if: steps.node-cache.outputs.cache-hit != 'true'
+              run: npm ci
 
-        - name: Lint & Prettier
-          run: npm run style
+            - name: create env file
+              shell: bash
+              run: |
+                  touch .env
+                  echo PASSWORD = ${{ secrets.PASSWORD }} >> .env
+                  echo RAW_PASSWORD = ${{ secrets.RAW_PASSWORD }} >> .env
+                  echo JWT_SECRET = ${{ secrets.JWT_SECRET }} >> .env
+                  cat .env
 
-        - name: Build
-          run: npm run build
+            - name: Lint & Prettier
+              run: npm run style
 
-        - name: Test
-          run: npm run test
+            - name: Build
+              run: npm run build
+
+            - name: Test
+              run: npm run test
 
 concurrency:
     group: ${{ github.head_ref }}
