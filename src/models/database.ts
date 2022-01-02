@@ -101,6 +101,7 @@ export default class DatabaseManager {
         const postPerPage = 10;
         const query = await this.Post.aggregate()
             .match(where)
+            .sort({ _id: -1 })
             .facet({
                 docs: [{ $skip: postPerPage * (page - 1) }, { $limit: postPerPage }],
                 totalPages: [{ $count: 'count' }],
