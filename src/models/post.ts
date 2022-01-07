@@ -15,6 +15,9 @@ const PostSchema: Schema = new Schema({
         type: String,
         required: true,
     },
+    thumbnail: {
+        type: String,
+    },
     body: {
         type: String,
         required: true,
@@ -48,6 +51,7 @@ export interface IPost extends Document {
     title: string;
     url: string;
     category: string;
+    thumbnail?: string;
     body: string;
     formattedBody: string;
     tags: string[];
