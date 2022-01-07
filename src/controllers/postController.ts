@@ -2,22 +2,13 @@ import { Request, Response } from 'express';
 import marked from '../marked';
 import DBManager from '../models/database';
 import { isError } from '../types/isError';
-import Post from '../types/post';
+import { PostRaw, PostPreview } from '../types/post';
 
 declare module 'express-session' {
     interface Session {
         visited?: string[];
     }
 }
-
-type Preview = {
-    title: string;
-    url: string;
-    preview: string;
-    writtenTime: string;
-    views: number;
-    repliesNum: number;
-};
 
 async function getPosts(req: Request, res: Response) {
     try {
@@ -114,11 +105,12 @@ async function deletePost(req: Request, res: Response) {
     }
 }
 
-function preview(docs: Post[]): Preview[] {
+function preview(docs: PostRaw[]): PostPreview[] {
     return docs.map(x => {
         return {
             title: x.title,
             url: x.url,
+            thumbnail: x.thumbnail,
             preview: bodyPreview(x.body),
             writtenTime: x.writtenTime,
             views: x.views,

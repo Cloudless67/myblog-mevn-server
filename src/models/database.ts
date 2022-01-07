@@ -7,7 +7,7 @@ import {
     Model,
     UpdateQuery,
 } from 'mongoose';
-import Post from '../types/post';
+import { PostRaw } from '../types/post';
 import { CategoryObject } from '../types';
 import Reply from '../types/reply';
 import PostSchema, { IPost } from './post';
@@ -67,7 +67,7 @@ export default class DatabaseManager {
         return await this.trySaveDocToDb(new this.Category(category));
     }
 
-    public async savePost(post: Post) {
+    public async savePost(post: PostRaw) {
         return await this.trySaveDocToDb(new this.Post(post));
     }
 
@@ -107,7 +107,7 @@ export default class DatabaseManager {
                 totalPages: [{ $count: 'count' }],
             });
 
-        const docs: Post[] = query[0].docs;
+        const docs: PostRaw[] = query[0].docs;
         const totalPages: number = query[0].totalPages[0].count;
 
         return { docs, totalPages };
