@@ -1,7 +1,12 @@
+type Thumbnail = {
+    url: string;
+    aspectRatio: number;
+};
+
 type PostRaw = {
     title: string;
     url: string;
-    thumbnail?: string;
+    thumbnail?: Thumbnail;
     body: string;
     writtenTime: string;
     views: number;
@@ -11,11 +16,11 @@ type PostRaw = {
 type PostPreview = {
     title: string;
     url: string;
-    thumbnail?: string;
+    thumbnail?: Thumbnail;
     preview: string;
     writtenTime: string;
     views: number;
     repliesNum: number;
 };
 
-export { PostRaw, PostPreview };
+export { Thumbnail, PostRaw, PostPreview };
