@@ -1,5 +1,6 @@
 import { Document, Schema } from 'mongoose';
 import { DateTime } from 'luxon';
+import { Thumbnail } from '../types/post';
 import ReplySchema, { Reply } from './reply';
 
 const PostSchema: Schema = new Schema({
@@ -16,7 +17,12 @@ const PostSchema: Schema = new Schema({
         required: true,
     },
     thumbnail: {
-        type: String,
+        url: {
+            type: String,
+        },
+        aspectRatio: {
+            type: Number,
+        },
     },
     body: {
         type: String,
@@ -45,13 +51,11 @@ const PostSchema: Schema = new Schema({
     },
 });
 
-export default PostSchema;
-
-export interface IPost extends Document {
+interface IPost extends Document {
     title: string;
     url: string;
     category: string;
-    thumbnail?: string;
+    thumbnail?: Thumbnail;
     body: string;
     formattedBody: string;
     tags: string[];
@@ -60,3 +64,7 @@ export interface IPost extends Document {
     replies: Reply[];
     repliesNum: number;
 }
+
+export default PostSchema;
+
+export { IPost };
