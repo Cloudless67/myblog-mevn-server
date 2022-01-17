@@ -1,0 +1,21 @@
+[
+    "Etc",
+    {
+        "name": "Frontend",
+        "isTopLevel": true,
+        "children": [
+            "Angular",
+            "React",
+            {
+                "name": "Vue",
+                "isTopLevel": false,
+                "children": ["Vuex", "Nuxt"]
+            }
+        ]
+    },
+    {
+        "name": "Backend",
+        "isTopLevel": true,
+        "children": ["Express", "Spring"]
+    }
+]
