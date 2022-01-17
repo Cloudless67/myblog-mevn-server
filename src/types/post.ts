@@ -15,4 +15,12 @@ type PostRaw = {
 
 type PostPreview = Omit<PostRaw, 'thumbnail' | 'body'> | { preview: string };
 
-export { Thumbnail, PostRaw, PostPreview };
+type PutPostData = {
+    category: string;
+    title: string;
+    thumbnail?: Thumbnail;
+    body: string;
+    tags: string;
+};
+
+export { Thumbnail, PostRaw, PostPreview, PutPostData };
