@@ -21,8 +21,10 @@ async function postReply(req: Request, res: Response) {
 async function deleteReply(req: Request, res: Response) {
     const url = decodeURI(req.params.slug);
     const id = req.params.id;
+    const authorization = req.headers.authorization;
+    const isAuthorized = authorization && isValidToken(authorization.split(' ')[1]);
 
-    if (req.headers.authorization && isValidToken(req.headers.authorization.split(' ')[1])) {
+    if (isAuthorized) {
         try {
             await DBManager.instance.deleteReply(url, id);
             res.status(200).end();
@@ -34,8 +36,9 @@ async function deleteReply(req: Request, res: Response) {
             const post = await DBManager.instance.findOnePost({ url });
             const replies: Reply[] = post.replies;
             const hashed = replies.find(x => x._id.toString() === id)?.password || '';
+            const isCorrectPassword = await compare(req.body.password, hashed);
 
-            if (await compare(req.body.password, hashed)) {
+            if (isCorrectPassword) {
                 await DBManager.instance.deleteReply(url, id);
                 res.status(200).end();
             } else {

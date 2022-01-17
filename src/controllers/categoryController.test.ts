@@ -1,80 +1,13 @@
+import fs from 'fs';
 import * as CategoryController from './categoryController';
+
+const CATEGORY_OBJECT_PATH = 'src/mocks/categoryControllerTest/categoryObject.json';
+const STRUCTURED_CATEGORY_PATH = 'src/mocks/categoryControllerTest/structuredObject.json';
 
 describe('Category controller tests', () => {
     test.only('should build category object correctly', () => {
-        const categories = [
-            {
-                name: 'Etc',
-                isTopLevel: true,
-                children: [],
-            },
-            {
-                name: 'Frontend',
-                isTopLevel: true,
-                children: ['Angular', 'React', 'Vue'],
-            },
-            {
-                name: 'Backend',
-                isTopLevel: true,
-                children: ['Express', 'Spring'],
-            },
-            {
-                name: 'Angular',
-                isTopLevel: false,
-                children: [],
-            },
-            {
-                name: 'React',
-                isTopLevel: false,
-                children: [],
-            },
-            {
-                name: 'Vue',
-                isTopLevel: false,
-                children: ['Vuex', 'Nuxt'],
-            },
-            {
-                name: 'Express',
-                isTopLevel: false,
-                children: [],
-            },
-            {
-                name: 'Spring',
-                isTopLevel: false,
-                children: [],
-            },
-            {
-                name: 'Vuex',
-                isTopLevel: false,
-                children: [],
-            },
-            {
-                name: 'Nuxt',
-                isTopLevel: false,
-                children: [],
-            },
-        ];
-        const expected = [
-            'Etc',
-            {
-                name: 'Frontend',
-                isTopLevel: true,
-                children: [
-                    'Angular',
-                    'React',
-                    {
-                        name: 'Vue',
-                        isTopLevel: false,
-                        children: ['Vuex', 'Nuxt'],
-                    },
-                ],
-            },
-            {
-                name: 'Backend',
-                isTopLevel: true,
-                children: ['Express', 'Spring'],
-            },
-        ];
+        const categories = JSON.parse(fs.readFileSync(CATEGORY_OBJECT_PATH, 'utf8'));
+        const expected = JSON.parse(fs.readFileSync(STRUCTURED_CATEGORY_PATH, 'utf8'));
         const structured = CategoryController.structureCategories(categories);
         expect(structured).toEqual(expected);
     });

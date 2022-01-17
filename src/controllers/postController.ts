@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import marked from '../marked';
 import DBManager from '../models/database';
 import { isError } from '../types/isError';
-import { PostRaw, PostPreview } from '../types/post';
+import { PostRaw, PostPreview, PutPostData } from '../types/post';
 
 declare module 'express-session' {
     interface Session {
@@ -10,9 +10,26 @@ declare module 'express-session' {
     }
 }
 
+function bodyPreview(body: string) {
+    return body.substring(0, Math.min(body.indexOf('#') > 0 ? body.indexOf('#') : 160, 160));
+}
+
+function preview(docs: PostRaw[]): PostPreview[] {
+    return docs.map(x => {
+        return {
+            title: x.title,
+            url: x.url,
+            preview: bodyPreview(x.body),
+            writtenTime: x.writtenTime,
+            views: x.views,
+            repliesNum: x.repliesNum,
+        };
+    });
+}
+
 async function getPosts(req: Request, res: Response) {
     try {
-        const page = Number(req.query.page || '1');
+        const page = Number(req.query.page || 1);
         if (req.params.category) {
             const { docs, totalPages } = await DBManager.instance.findPostsInCategory(
                 req.params.category,
@@ -31,7 +48,7 @@ async function getPosts(req: Request, res: Response) {
 
 async function getPostsWithTag(req: Request, res: Response) {
     try {
-        const page = Number(req.query.page || '1');
+        const page = Number(req.query.page || 1);
         const { docs, totalPages } = await DBManager.instance.findPostsWithTag(
             req.params.tag,
             page
@@ -66,13 +83,17 @@ async function getPost(req: Request, res: Response) {
     }
 }
 
+function getPostFromRequestBody<BodyType extends PutPostData>(requestBody: BodyType) {
+    return {
+        ...requestBody,
+        formattedBody: marked(requestBody.body),
+        tags: requestBody.tags ? requestBody.tags.split(',') : [],
+    };
+}
+
 async function postPost(req: Request, res: Response) {
     try {
-        const post = {
-            ...req.body,
-            formattedBody: marked(req.body.body),
-            tags: req.body.tags ? req.body.tags.split(',') : [],
-        };
+        const post = getPostFromRequestBody(req.body);
         await DBManager.instance.savePost(post);
         res.status(200).json({ url: req.body.url });
     } catch (error) {
@@ -83,11 +104,7 @@ async function postPost(req: Request, res: Response) {
 async function putPost(req: Request, res: Response) {
     try {
         const url = decodeURI(req.params.slug);
-        const post = {
-            ...req.body,
-            formattedBody: marked(req.body.body),
-            tags: req.body.tags ? req.body.tags.split(',') : [],
-        };
+        const post = getPostFromRequestBody(req.body);
         await DBManager.instance.updatePost({ url }, post);
         res.status(200).json({ url });
     } catch (error) {
@@ -103,24 +120,6 @@ async function deletePost(req: Request, res: Response) {
     } catch (error) {
         if (isError(error)) res.status(404).send(error.message);
     }
-}
-
-function preview(docs: PostRaw[]): PostPreview[] {
-    return docs.map(x => {
-        return {
-            title: x.title,
-            url: x.url,
-            thumbnail: x.thumbnail,
-            preview: bodyPreview(x.body),
-            writtenTime: x.writtenTime,
-            views: x.views,
-            repliesNum: x.repliesNum,
-        };
-    });
-}
-
-function bodyPreview(body: string) {
-    return body.substring(0, Math.min(body.indexOf('#') > 0 ? body.indexOf('#') : 160, 160));
 }
 
 export { getPosts, getPostsWithTag, getPost, postPost, putPost, deletePost };
