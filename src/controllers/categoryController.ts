@@ -23,7 +23,7 @@ async function getStructuredCategories(req: Request, res: Response) {
 }
 
 async function postCategory(req: Request, res: Response) {
-    const parent: string | undefined = req.body.parent;
+    const parent = req.body.parent;
     const newCategory = categoryFromReq(req);
 
     try {
@@ -49,11 +49,10 @@ async function putCategory(req: Request, res: Response) {
         } else {
             await DBManager.instance.updateCategory({ name }, { isTopLevel: true });
         }
-        const categories = await DBManager.instance.findAllCategories();
-        res.json(structureCategories(categories as CategoryObject[]));
+        const categories: CategoryObject[] = await DBManager.instance.findAllCategories();
+        res.json(structureCategories(categories));
     } catch (error) {
         if (isError(error)) res.status(400).send(error.message);
-        return;
     }
 }
 
@@ -69,18 +68,17 @@ async function deleteCategory(req: Request, res: Response) {
 
 async function deleteCategoryFromDB(name: string) {
     const category = await DBManager.instance.findOneCategory({ name });
+
     if (!category) throw new Error('The category does not exists.');
     if (category.children) throw new Error('Can not delete category with children.');
+
     await DBManager.instance.updateCategory({ children: name }, { $pull: { children: name } });
-    await DBManager.instance.deleteCategory({ name });
+    DBManager.instance.deleteCategory({ name });
 }
 
 async function createCategory(category: CategoryObject, parent?: string) {
     await DBManager.instance.saveCategory(category);
-    await DBManager.instance.updateCategory(
-        { name: parent },
-        { $push: { children: category.name } }
-    );
+    DBManager.instance.updateCategory({ name: parent }, { $push: { children: category.name } });
 }
 
 function structureCategories(categories: CategoryObject[]): Category[] {
@@ -101,7 +99,7 @@ function structureCategories(categories: CategoryObject[]): Category[] {
 function CategoryObjectFromICategory(icat: ICategory): CategoryObject {
     return {
         name: icat.name,
-        isTopLevel: icat.isTopLevel as boolean,
+        isTopLevel: icat.isTopLevel,
         children: icat.children,
     };
 }
