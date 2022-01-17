@@ -75,7 +75,6 @@ const tokenizer: TokenizerObject = {
     codespan(src: string) {
         const match = src.match(/^([`$])([^\1]+?)\1/);
         if (match) {
-            console.log(match);
             return {
                 type: 'codespan',
                 raw: match[0],
