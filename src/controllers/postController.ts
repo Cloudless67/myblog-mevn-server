@@ -110,7 +110,6 @@ function preview(docs: PostRaw[]): PostPreview[] {
         return {
             title: x.title,
             url: x.url,
-            thumbnail: x.thumbnail,
             preview: bodyPreview(x.body),
             writtenTime: x.writtenTime,
             views: x.views,

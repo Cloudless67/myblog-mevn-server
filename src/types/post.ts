@@ -13,14 +13,6 @@ type PostRaw = {
     repliesNum: number;
 };
 
-type PostPreview = {
-    title: string;
-    url: string;
-    thumbnail?: Thumbnail;
-    preview: string;
-    writtenTime: string;
-    views: number;
-    repliesNum: number;
-};
+type PostPreview = Omit<PostRaw, 'thumbnail' | 'body'> | { preview: string };
 
 export { Thumbnail, PostRaw, PostPreview };
