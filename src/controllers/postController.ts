@@ -86,7 +86,7 @@ async function getPost(req: Request, res: Response) {
 function getPostFromRequestBody<BodyType extends PutPostData>(requestBody: BodyType) {
     return {
         ...requestBody,
-        formattedBody: marked(requestBody.body),
+        formattedBody: marked.parse(requestBody.body),
         tags: requestBody.tags ? requestBody.tags.split(',') : [],
     };
 }
