@@ -1,11 +1,13 @@
-import {marked} from 'marked';
+import { marked } from 'marked';
 import Prism from 'prismjs';
 import katex from 'katex';
 import loadLanguages from 'prismjs/components/';
 
 const CODE_SPAN_REGEX = /^([`$])([^\1]+?)\1/;
-const INLINE_TEXT_REGEX = /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/;
-const CODE_FENCE_REGEX = /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`$]* *(?:\n+|$)|$)/;
+const INLINE_TEXT_REGEX =
+    /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/;
+const CODE_FENCE_REGEX =
+    /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`$]* *(?:\n+|$)|$)/;
 
 function escapeHtml(unsafe: string) {
     return unsafe
