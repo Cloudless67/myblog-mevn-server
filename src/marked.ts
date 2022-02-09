@@ -1,4 +1,4 @@
-import marked, { Renderer, RendererObject, Tokenizer, TokenizerObject } from 'marked';
+import {marked} from 'marked';
 import Prism from 'prismjs';
 import katex from 'katex';
 import loadLanguages from 'prismjs/components/';
@@ -20,7 +20,7 @@ Prism.languages.insertBefore('bash', 'variable', {
     function: /^\w+/m,
 });
 
-const renderer: RendererObject = {
+const renderer: marked.RendererObject = {
     // Override code block
     code(code: string, infostring: string) {
         if (infostring === 'Math') {
@@ -59,18 +59,9 @@ const renderer: RendererObject = {
     listitem(text: string) {
         return '<li>' + text + '</li>\n';
     },
-    checkbox(checked: boolean) {
-        return (
-            '<input ' +
-            (checked ? 'checked="" ' : '') +
-            'type="checkbox"' +
-            ((this as Renderer).options.xhtml ? ' /' : '') +
-            '> '
-        );
-    },
 };
 
-const tokenizer: TokenizerObject = {
+const tokenizer: marked.TokenizerObject = {
     // Match for inline $ ... $ syntax
     codespan(src: string) {
         const match = src.match(/^([`$])([^\1]+?)\1/);
@@ -85,26 +76,15 @@ const tokenizer: TokenizerObject = {
         return false;
     },
     // Disable inline text when meeting $ inline
-    inlineText(src: string, inRawBlock: boolean, smartypants: (cap: string) => string) {
+    inlineText(this: marked.TokenizerThis, src: string) {
         const cap = src.match(
             /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/
         );
-        const options = (this as Tokenizer).options;
         if (cap) {
-            let text: string;
-            if (inRawBlock) {
-                text = options.sanitize
-                    ? options.sanitizer
-                        ? options.sanitizer(cap[0])
-                        : cap[0]
-                    : cap[0];
-            } else {
-                text = options.smartypants ? smartypants(cap[0]) : cap[0];
-            }
             return {
                 type: 'text',
-                raw: cap[0] as string,
-                text: text,
+                raw: cap[0],
+                text: cap[0],
             };
         }
         return false;
