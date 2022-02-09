@@ -3,6 +3,10 @@ import Prism from 'prismjs';
 import katex from 'katex';
 import loadLanguages from 'prismjs/components/';
 
+const CODE_SPAN_REGEX = /^([`$])([^\1]+?)\1/;
+const INLINE_TEXT_REGEX = /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/;
+const CODE_FENCE_REGEX = /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`$]* *(?:\n+|$)|$)/;
+
 function escapeHtml(unsafe: string) {
     return unsafe
         .replace(/&/g, '&amp;')
@@ -64,7 +68,7 @@ const renderer: marked.RendererObject = {
 const tokenizer: marked.TokenizerObject = {
     // Match for inline $ ... $ syntax
     codespan(src: string) {
-        const match = src.match(/^([`$])([^\1]+?)\1/);
+        const match = src.match(CODE_SPAN_REGEX);
         if (match) {
             return {
                 type: 'codespan',
@@ -77,9 +81,7 @@ const tokenizer: marked.TokenizerObject = {
     },
     // Disable inline text when meeting $ inline
     inlineText(this: marked.TokenizerThis, src: string) {
-        const cap = src.match(
-            /^([`$]+|[^`$])(?:[\s\S]*?(?:(?=[\\<![`$*]|\b_|$)|[^ ](?= {2,}\n))|(?= {2,}\n))/
-        );
+        const cap = src.match(INLINE_TEXT_REGEX);
         if (cap) {
             return {
                 type: 'text',
@@ -91,9 +93,7 @@ const tokenizer: marked.TokenizerObject = {
     },
     // Match for $$ ... $$ blocks
     fences(src: string) {
-        const cap = src.match(
-            /^ {0,3}(`{3,}|\${2,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`$]* *(?:\n+|$)|$)/
-        );
+        const cap = src.match(CODE_FENCE_REGEX);
         if (cap) {
             return {
                 type: 'code',
