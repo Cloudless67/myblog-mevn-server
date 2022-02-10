@@ -5,6 +5,7 @@ import session from 'express-session';
 import logger from 'morgan';
 import history from 'connect-history-api-fallback';
 import helmet from 'helmet';
+import compression from 'compression';
 import MongoStore from 'connect-mongo';
 import expressStaticGzip from 'express-static-gzip';
 import apiRouter from './routes/api';
@@ -24,6 +25,7 @@ app.use(helmet({ contentSecurityPolicy: cspConfigs }));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(compression());
 
 const store = MongoStore.create({ mongoUrl: DB_URL });
 app.use(session(sessionConfig(store)));
