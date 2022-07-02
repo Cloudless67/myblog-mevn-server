@@ -7,6 +7,7 @@ import {
     Model,
     UpdateQuery,
 } from 'mongoose';
+import { DateTime } from 'luxon';
 import { PostRaw } from '../types/post';
 import { CategoryObject } from '../types';
 import Reply from '../types/reply';
@@ -68,7 +69,9 @@ export default class DatabaseManager {
     }
 
     public async savePost(post: PostRaw) {
-        return await this.trySaveDocToDb(new this.Post(post));
+        return await this.trySaveDocToDb(
+            new this.Post({ ...post, writtenTime: DateTime.now().toString() })
+        );
     }
 
     public async findOneCategory(where: FilterQuery<ICategory>) {

@@ -1,5 +1,4 @@
 import { Document, Schema } from 'mongoose';
-import { DateTime } from 'luxon';
 import { Thumbnail } from '../types/post';
 import ReplySchema, { Reply } from './reply';
 
@@ -35,7 +34,7 @@ const PostSchema: Schema = new Schema({
     tags: [String],
     writtenTime: {
         type: Date,
-        default: DateTime.now().toString(),
+        required: true,
     },
     views: {
         type: Number,
